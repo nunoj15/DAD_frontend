@@ -1,24 +1,61 @@
-<script setup>
+<script>
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
+export default {
+  data() {
+    return {
+      menuItems: []
+    };
+  },
+  mounted() {
+    fetch('/menu.json')
+      .then(response => response.json())
+      .then(data => {
+        this.menuItems = data.menu;
+      });
+  }
+};
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+  <v-card>
+    <v-layout >
+      <v-navigation-drawer
+        permanent
+        theme="dark"
+        class="mt-0"
+      >
+      <v-list>
+          <v-list-item
+            prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg"
+            title="Sandra Adams"
+            subtitle="sandra_a88@gmailcom"
+          ></v-list-item>
+        </v-list>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+        <v-divider></v-divider>
 
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+        <v-list nav >
+          <v-list-item v-for="item in menuItems" :key="item.id">
+            <v-expansion-panels class="shadow-none p-0" v-if="item.children">
+              <v-expansion-panel>
+                <v-expansion-panel-title>{{ item.title }}</v-expansion-panel-title>
+                <v-expansion-panel-text>
+                  <v-list-item v-for="child in item.children" :key="child.id" >
+                    <RouterLink :to="child.link">{{ child.title }}</RouterLink>
+                  </v-list-item>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+            </v-expansion-panels>
+            <RouterLink class="p-2"  v-if="!item.children" :to="item.link">{{ item.title }}</RouterLink>
+          </v-list-item>
+        </v-list>
+      </v-navigation-drawer>
+      <v-main ><RouterView /></v-main>
+    </v-layout>
+  </v-card>
 </template>
+
 
 <style scoped>
 header {
