@@ -18,13 +18,14 @@ export default {
 </script>
 
 <template>
-  <v-card>
-    <v-layout >
+  <v-layout>
+   <div border-color="red">
       <v-navigation-drawer
         permanent
         theme="dark"
         class="mt-0"
       >
+      
       <v-list>
           <v-list-item
             prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg"
@@ -51,13 +52,21 @@ export default {
           </v-list-item>
         </v-list>
       </v-navigation-drawer>
-      <v-main ><RouterView /></v-main>
-    </v-layout>
-  </v-card>
+    <div class="router-view">
+        <RouterView />
+    </div>
+  </div>
+</v-layout>
 </template>
 
 
 <style scoped>
+.router-view{
+  margin-left: 256px;
+  width: calc(100hv-256px);
+  align-items: center;
+
+}
 header {
   line-height: 1.5;
   max-height: 100vh;

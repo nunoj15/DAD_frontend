@@ -7,21 +7,28 @@
       },
       {
         "id": 2,
-        "title": "Transactions",
-        "link": "/transactions",
+        "title": "Login",
+        "link": "/login"
+      },
+      {
+        "id": 3,
+        "title": "VCards",
+        "link": "/vcards",
         "children": [
           {
-            "id": 3,
+            "id": 4,
             "title": "Categoria 1",
             "link": "/produtos/categoria1"
           },
           {
-            "id": 4,
+            "id": 5,
             "title": "Categoria 2",
             "link": "/produtos/categoria2"
           }
         ]
       }
+     
+    
     ]
   }
   
