@@ -1,6 +1,5 @@
 <template>
     <div>
-  
       <v-card
         name="viewport"
         class="mx-auto pa-12 pb-8 justify-center"
@@ -67,7 +66,6 @@
   </template>
   
   <script>
-  
   export default {
     data() {
       return {
@@ -102,11 +100,13 @@
           console.log('Registration successful! Token:', token);
   
           // Redirect or perform any additional actions after successful registration
+          toast.success('Registration successful!')
         } catch (error) {
           // Handle registration error
           if (error.response) {
             // The request was made, but the server responded with a non-2xx status code
             this.error = error.response.data.message || 'Registration failed.';
+            toast.error('Registration failed.')
           } else if (error.request) {
             // The request was made but no response was received
             this.error = 'No response from the server.';

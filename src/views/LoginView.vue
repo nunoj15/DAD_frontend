@@ -103,11 +103,13 @@ export default {
         console.log('Login successful!');
 
         // Redirect or perform any additional actions after successful login
+        toast.success('Login successful!');
       } catch (error) {
         // Handle login error
         if (error.response) {
           // The request was made, but the server responded with a non-2xx status code
           this.error = error.response.data.message || 'Login failed.';
+          toast.error('Login failed.');
         } else if (error.request) {
           // The request was made but no response was received
           this.error = 'No response from the server.';
