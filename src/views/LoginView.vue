@@ -1,5 +1,9 @@
 <template>
 <div class="d-flex justify-center">
+  <v-form
+      class="row g-3 needs-validation"
+      novalidate
+      @submit.prevent="login">
     <v-card
       name="viewport"
       class="mx-auto pa-12 pb-8 justify-center"
@@ -15,6 +19,7 @@
         placeholder="Email address"
         prepend-inner-icon="mdi-email-outline"
         variant="outlined"
+        v-model="credentials.email"
       ></v-text-field>
 
       <div class="text-subtitle-1 text-medium-emphasis d-flex align-center justify-space-between">
@@ -30,6 +35,7 @@
         placeholder="Enter your password"
         prepend-inner-icon="mdi-lock-outline"
         variant="outlined"
+        v-model="credentials.password"
         @click:append-inner="visible = !visible"
       ></v-text-field>
 
@@ -46,6 +52,7 @@
         color="green"
         size="large"
         variant="tonal"
+        @click="login"
       >
         Log In
       </v-btn>
@@ -62,65 +69,47 @@
         </a>
       </router-link>
       </v-card-text>
-    </v-card>
+      </v-card>
+    </v-form>
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      email: '',
-      password: '',
-      error: null,
-      visible: false
-    };
-  },
-  methods: {
-    async login() {
-      // Reset previous error message
-      this.error = null;
+<script setup>
+import { ref, inject} from 'vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
+import axios from 'axios';
+import { provide } from 'vue';
+const toast = inject('toast')
 
-      // Client-side validation
-      if (!this.email || !this.password) {
-        this.error = 'Please enter both email and password.';
-        return;
-      }
+provide('axios', axios);
+const credentials = ref({
+  email: '',
+  password: ''
+})
+const emit = defineEmits(['login'])
 
-      try {
-        const response = await this.$axios.post('/login', {
-          email: this.email,
-          password: this.password,
-        });
+const login = async () => {
+  try {
+    const response = await axios.post('login', credentials.value);
+    toast.success('User ' + credentials.value.email + ' has entered the application.');
 
-        const token = response.data.access_token;
-        if (!token) {
-          this.error = 'Invalid response from the server.';
-          return;
-        }
+    if (axios && axios.defaults) {
+      axios.defaults.headers.common.Authorization = "Bearer " + response.data.access_token;
+    }
 
-        // Log the token for now (you may want to store it securely)
-        console.log('Login successful!');
+    emit('login');
+    router.back();
+  } catch (error) {
+    if (axios && axios.defaults) {
+      delete axios.defaults.headers.common.Authorization;
+    }
 
-        // Redirect or perform any additional actions after successful login
-        toast.success('Login successful!');
-      } catch (error) {
-        // Handle login error
-        if (error.response) {
-          // The request was made, but the server responded with a non-2xx status code
-          this.error = error.response.data.message || 'Login failed.';
-          toast.error('Login failed.');
-        } else if (error.request) {
-          // The request was made but no response was received
-          this.error = 'No response from the server.';
-        } else {
-          // Something happened in setting up the request that triggered an Error
-          this.error = 'An unexpected error occurred.';
-        }
-      }
-    },
-  },
+    credentials.value.password = '';
+    toast.error('User credentials are invalid!');
+  }
 };
+
 </script>
 
 <style scoped>

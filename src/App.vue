@@ -1,20 +1,32 @@
-<script>
-import { RouterLink, RouterView } from 'vue-router'
+<script setup>
+import { RouterLink, RouterView, useRouter } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
-export default {
-  data() {
-    return {
-      menuItems: []
-    };
-  },
-  mounted() {
-    fetch('/menu.json')
+import { ref, onMounted, inject } from 'vue';
+import { useUserStore } from './stores/user.js'
+const axios = inject("axios")
+const toast = inject("toast")
+const menuItems = ref([]);
+const userStore = useUserStore()
+const router = useRouter();
+
+onMounted(() => {
+  fetch('/menu.json')
       .then(response => response.json())
       .then(data => {
-        this.menuItems = data.menu;
+        menuItems.value = data.menu;
       });
+});
+/*
+const logout = async () => {
+  if (await userStore.logout()) {
+    toast.success('User has logged out of the application.')
+    router.push({name: 'home'})
+  } else {
+    toast.error('There was a problem logging out of the application!')
   }
-};
+}
+
+ */
 </script>
 
 <template>
@@ -44,6 +56,11 @@ export default {
                 <v-expansion-panel-text>
                   <v-list-item v-for="child in item.children" :key="child.id" >
                     <RouterLink :to="child.link">{{ child.title }}</RouterLink>
+                  </v-list-item>
+                  <v-list-item>
+                    <a class="dropdown-item" @click.prevent="logout">
+                      Logout
+                    </a>
                   </v-list-item>
                 </v-expansion-panel-text>
               </v-expansion-panel>
