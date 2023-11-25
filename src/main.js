@@ -9,6 +9,7 @@ import 'vuetify/dist/vuetify.min.css'
 import 'tailwindcss/tailwind.css'
 import axios from 'axios'
 import { createPinia } from 'pinia'
+//axios.defaults.withCredentials = true;
 
 const app = createApp(App)
 

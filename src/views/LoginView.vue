@@ -81,12 +81,13 @@ const router = useRouter()
 import axios from 'axios';
 import { provide } from 'vue';
 const toast = inject('toast')
-
+import { useUserStore } from '../stores/user.js'
 provide('axios', axios);
 const credentials = ref({
   email: '',
   password: ''
 })
+const userStore = useUserStore()
 const emit = defineEmits(['login'])
 
 const login = async () => {
@@ -96,6 +97,7 @@ const login = async () => {
 
     if (axios && axios.defaults) {
       axios.defaults.headers.common.Authorization = "Bearer " + response.data.access_token;
+      console.log("")
     }
 
     emit('login');

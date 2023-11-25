@@ -16,7 +16,7 @@ onMounted(() => {
         menuItems.value = data.menu;
       });
 });
-/*
+
 const logout = async () => {
   if (await userStore.logout()) {
     toast.success('User has logged out of the application.')
@@ -26,7 +26,6 @@ const logout = async () => {
   }
 }
 
- */
 </script>
 
 <template>
