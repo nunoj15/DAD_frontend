@@ -82,6 +82,7 @@ import axios from 'axios';
 import { provide } from 'vue';
 const toast = inject('toast')
 import { useUserStore } from '../stores/user.js'
+import io from 'socket.io-client';
 provide('axios', axios);
 const credentials = ref({
   email: '',
@@ -94,15 +95,20 @@ const login = async () => {
   try {
     const response = await axios.post('login', credentials.value);
     toast.success('User ' + credentials.value.email + ' has entered the application.');
-
+    localStorage.setItem('token', response.data.access_token)
     if (axios && axios.defaults) {
       axios.defaults.headers.common.Authorization = "Bearer " + response.data.access_token;
       console.log("")
     }
+    let socket = io('http://localhost:3000');
 
+    socket.emit('WebClientConnectInit', {
+      identifier:credentials.value.email,
+    });
     emit('login');
     router.back();
   } catch (error) {
+    console.log(error)
     if (axios && axios.defaults) {
       delete axios.defaults.headers.common.Authorization;
     }

@@ -6,6 +6,7 @@ import { useUserStore } from './stores/user.js'
 const axios = inject("axios")
 const toast = inject("toast")
 const menuItems = ref([]);
+let token = ref('');
 const userStore = useUserStore()
 const router = useRouter();
 
@@ -15,6 +16,8 @@ onMounted(() => {
       .then(data => {
         menuItems.value = data.menu;
       });
+    token.value = localStorage.getItem('token')
+    console.log(token.value)
 });
 
 const logout = async () => {
@@ -29,8 +32,8 @@ const logout = async () => {
 </script>
 
 <template>
-  <v-layout>
-   <div border-color="red">
+  <v-layout v-if="token" class="w-100">
+   <div border-color="red" class="w-100">
       <v-navigation-drawer
         permanent
         theme="dark"
@@ -73,6 +76,10 @@ const logout = async () => {
     </div>
   </div>
 </v-layout>
+<div v-if="!token" class="router-view">
+  {{token.value }}
+        <RouterView />
+    </div>
 </template>
 
 

@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import VCards from '../views/VCardsView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
+import TransactionsView from '../views/TransactionsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -28,13 +29,18 @@ const router = createRouter({
       path: '/register',
       name: 'register',
       component: RegisterView
+    },
+    {
+      path: '/transactions',
+      name: 'transactions',
+      component: TransactionsView
     }
   ]
 })
 
 router.beforeEach((to, from, next) => {
   // Lógica de autenticação, por exemplo
-  const isAuthenticated = true;
+  const isAuthenticated = localStorage.getItem("token") ? true : false;
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     next('/login'); // Redireciona para a página de login se não estiver autenticado

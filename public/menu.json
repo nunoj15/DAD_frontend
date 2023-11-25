@@ -26,6 +26,11 @@
             "link": "/produtos/categoria2"
           }
         ]
+      },
+      {
+        "id": 3,
+        "title": "Transactions",
+        "link": "/transactions"
       }
      
     
