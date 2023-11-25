@@ -1,42 +1,13 @@
-<script setup>
-import { RouterLink, RouterView, useRouter } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-import { ref, onMounted, inject } from 'vue';
-import { useUserStore } from './stores/user.js'
-const axios = inject("axios")
-const toast = inject("toast")
-const menuItems = ref([]);
-const userStore = useUserStore()
-const router = useRouter();
-
-onMounted(() => {
-  fetch('/menu.json')
-      .then(response => response.json())
-      .then(data => {
-        menuItems.value = data.menu;
-      });
-});
-
-const logout = async () => {
-  if (await userStore.logout()) {
-    toast.success('User has logged out of the application.')
-    router.push({name: 'home'})
-  } else {
-    toast.error('There was a problem logging out of the application!')
-  }
-}
-
-</script>
-
 <template>
-  <v-layout>
+  <!-- <v-layout>
+
+
    <div border-color="red">
       <v-navigation-drawer
         permanent
         theme="dark"
         class="mt-0"
       >
-      
       <v-list>
           <v-list-item
             prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg"
@@ -69,11 +40,52 @@ const logout = async () => {
         </v-list>
       </v-navigation-drawer>
     <div class="router-view">
+      <VCardComponent />
+
         <RouterView />
     </div>
   </div>
-</v-layout>
+</v-layout> -->
+
+<v-layout>
+<div id="app">
+  <NavBarComponent v-if="isAuthenticated" />
+    <ContentComponent v-if="isAuthenticated" />
+    <Login v-else />
+  </div>
+</v-layout> 
 </template>
+
+<script setup>
+import { onMounted, ref, inject } from 'vue';
+import { useRouter } from 'vue-router';
+import { useUserStore } from './stores/user.js';
+import axios from 'axios';
+import Login from './components/LoginComponent.vue';
+import NavBarComponent from './components/NavBarComponent.vue';
+import ContentComponent from './components/ContentComponent.vue';
+
+const toast = inject('toast');
+const userStore = useUserStore();
+const router = useRouter();
+
+const isAuthenticated = ref(false);
+
+// Check if the user is authenticated
+const checkAuthentication = () => {
+  const authToken = localStorage.getItem('token');
+  isAuthenticated.value = !!authToken; // Update isAuthenticated based on the presence of the token
+};
+
+// Call the function to check authentication when the component is mounted
+checkAuthentication();
+
+onMounted(() => {
+  // Fetch menu items or any other initial setup
+});
+
+</script>
+
 
 
 <style scoped>

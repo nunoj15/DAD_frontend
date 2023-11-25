@@ -13,7 +13,7 @@ import { createPinia } from 'pinia'
 
 const app = createApp(App)
 
-const serverBaseUrl = 'http://localhost'
+const serverBaseUrl = 'http://localhost:8000'
 app.provide('serverBaseUrl', serverBaseUrl)
 // Default Axios configuration
 axios.defaults.baseURL = serverBaseUrl + '/api'

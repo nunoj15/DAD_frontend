@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import VCards from '../views/VCardsView.vue'
-import LoginView from '../views/LoginView.vue'
+import Login from '../components/LoginComponent.vue'
 import RegisterView from '../views/RegisterView.vue'
 
 const router = createRouter({
@@ -22,7 +22,7 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: LoginView
+      component: Login
     },
     {
       path: '/register',
@@ -33,14 +33,14 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  // Lógica de autenticação, por exemplo
-  const isAuthenticated = true;
+  const isAuthenticated = localStorage.getItem('token') !== null;
 
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/login'); // Redireciona para a página de login se não estiver autenticado
+  if (to.name !== 'login' && !isAuthenticated) {
+    next({ name: 'login' });
   } else {
-    next(); // Permite o acesso à rota se autenticado ou se a rota não requer autenticação
+    next();
   }
 });
+
 
 export default router

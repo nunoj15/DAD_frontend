@@ -17,8 +17,8 @@
         "children": [
           {
             "id": 4,
-            "title": "Categoria 1",
-            "link": "/produtos/categoria1"
+            "title": "Todos os Cartões",
+            "link": "/vcards"
           },
           {
             "id": 5,
