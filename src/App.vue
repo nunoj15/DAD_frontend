@@ -1,8 +1,10 @@
 <script setup>
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
-import { ref, onMounted, inject } from 'vue';
+import { ref, onMounted, inject, computed } from 'vue';
 import { useUserStore } from './stores/user.js'
+import io from 'socket.io-client';
+import store from './socketClient.js';
 const axios = inject("axios")
 const toast = inject("toast")
 const menuItems = ref([]);
@@ -18,8 +20,17 @@ onMounted(() => {
       });
     token.value = localStorage.getItem('token')
     console.log(token.value)
+
+
 });
 
+
+const socket = io('http://localhost:3000');
+
+socket.on('ReceivedTransactionNotification', (data) => {
+console.log('Mensagem recebida do servidor:', data);
+// Faça algo com a mensagem, como exibir uma notificação
+  });
 const logout = async () => {
   if (await userStore.logout()) {
     toast.success('User has logged out of the application.')
@@ -28,6 +39,8 @@ const logout = async () => {
     toast.error('There was a problem logging out of the application!')
   }
 }
+
+
 
 </script>
 

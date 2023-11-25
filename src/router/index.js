@@ -33,7 +33,8 @@ const router = createRouter({
     {
       path: '/transactions',
       name: 'transactions',
-      component: TransactionsView
+      component: TransactionsView,
+      meta: { requiresAuth: true }
     }
   ]
 })

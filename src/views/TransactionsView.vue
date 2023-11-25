@@ -52,7 +52,7 @@
           <v-row>
             <v-col>
               <v-text-field
-                v-model="paymentReference"
+                v-model="recipient"
                 label="Referência de Pagamento"
                 required
               ></v-text-field>
@@ -153,6 +153,8 @@
 
 </template>
 <script>
+import io from 'socket.io-client';
+import store from '../socketClient';
   export default {
     data () {
       return {
@@ -235,6 +237,21 @@
         transactionCategory: this.transactionCategory,
         transactionDescription: this.transactionDescription,
       });
+
+    let userEmail = localStorage.getItem('userEmail')
+
+    let socket = io('http://localhost:3000');
+
+    socket.emit('SendTransactionNotification', {
+      from: userEmail,
+      to:this.recipient,
+      value: this.transactionValue
+    });
+
+    socket.on('ReceivedTransactionNotification', (data) => {
+console.log('Mensagem recebida do servidor:', data);
+// Faça algo com a mensagem, como exibir uma notificação
+  });
 
       // Você pode redefinir os campos do formulário após o envio, se necessário
       this.resetForm();

@@ -96,17 +96,19 @@ const login = async () => {
     const response = await axios.post('login', credentials.value);
     toast.success('User ' + credentials.value.email + ' has entered the application.');
     localStorage.setItem('token', response.data.access_token)
+    localStorage.setItem('userEmail', credentials.value.email)
     if (axios && axios.defaults) {
       axios.defaults.headers.common.Authorization = "Bearer " + response.data.access_token;
       console.log("")
     }
     let socket = io('http://localhost:3000');
 
+    let email = credentials.value.email.toString()
     socket.emit('WebClientConnectInit', {
-      identifier:credentials.value.email,
+      identifier: email,
     });
     emit('login');
-    router.back();
+    router.push('/');
   } catch (error) {
     console.log(error)
     if (axios && axios.defaults) {

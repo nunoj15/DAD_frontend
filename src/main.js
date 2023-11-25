@@ -9,6 +9,7 @@ import 'vuetify/dist/vuetify.min.css'
 import 'tailwindcss/tailwind.css'
 import axios from 'axios'
 import { createPinia } from 'pinia'
+import store from './socketClient';
 //axios.defaults.withCredentials = true;
 
 const app = createApp(App)
@@ -27,6 +28,7 @@ app.use(Toaster, {
 })
 app.provide('toast', app.config.globalProperties.$toast)
 app.use(createPinia())
+
 app.use(router)
 
 app.use(vuetify)  // Use o Vuetify no app
