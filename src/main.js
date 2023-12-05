@@ -10,6 +10,7 @@ import 'tailwindcss/tailwind.css'
 import axios from 'axios'
 import { createPinia } from 'pinia'
 import store from './socketClient';
+import io from 'socket.io-client';
 //axios.defaults.withCredentials = true;
 
 const app = createApp(App)
@@ -33,5 +34,5 @@ app.use(router)
 
 app.use(vuetify)  // Use o Vuetify no app
 
-
+app.provide('socket',io("http://localhost:3000"))
 app.mount('#app')

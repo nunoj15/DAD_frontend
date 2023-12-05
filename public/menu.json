@@ -6,19 +6,14 @@
         "link": "/"
       },
       {
-        "id": 2,
-        "title": "Login",
-        "link": "/login"
-      },
-      {
         "id": 3,
         "title": "VCards",
         "link": "/vcards",
         "children": [
           {
             "id": 4,
-            "title": "Categoria 1",
-            "link": "/produtos/categoria1"
+            "title": "Todos os Cartões",
+            "link": "/vcards"
           },
           {
             "id": 5,

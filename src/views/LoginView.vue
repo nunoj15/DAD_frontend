@@ -90,7 +90,7 @@ const credentials = ref({
 })
 const userStore = useUserStore()
 const emit = defineEmits(['login'])
-
+const socket = inject("socket")
 const login = async () => {
   try {
     const response = await axios.post('login', credentials.value);
@@ -101,7 +101,7 @@ const login = async () => {
       axios.defaults.headers.common.Authorization = "Bearer " + response.data.access_token;
       console.log("")
     }
-    let socket = io('http://localhost:3000');
+    
 
     let email = credentials.value.email.toString()
     socket.emit('WebClientConnectInit', {

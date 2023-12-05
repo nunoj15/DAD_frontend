@@ -155,7 +155,10 @@
 <script>
 import io from 'socket.io-client';
 import store from '../socketClient';
+import {inject} from 'vue'
+
   export default {
+    inject:["socket"],
     data () {
       return {
         transactionValue: "",
@@ -240,15 +243,15 @@ import store from '../socketClient';
 
     let userEmail = localStorage.getItem('userEmail')
 
-    let socket = io('http://localhost:3000');
+    
 
-    socket.emit('SendTransactionNotification', {
+    this.socket.emit('SendTransactionNotification', {
       from: userEmail,
       to:this.recipient,
       value: this.transactionValue
     });
 
-    socket.on('ReceivedTransactionNotification', (data) => {
+    this.socket.on('ReceivedTransactionNotification', (data) => {
 console.log('Mensagem recebida do servidor:', data);
 // Faça algo com a mensagem, como exibir uma notificação
   });

@@ -2,7 +2,6 @@ import { ref, computed, inject } from 'vue'
 import { defineStore } from 'pinia'
 import axios from "axios";
 export const useUserStore = defineStore('user', () => {
-    const axios = inject('axios')
     const serverBaseUrl = inject('serverBaseUrl')
     const user = ref(null)
 
@@ -29,14 +28,33 @@ export const useUserStore = defineStore('user', () => {
             return false
         }
     };
-    async function logout(){
+    async function logout() {
         try {
-            await axios.post('logout')
-            clearUser()
-            return true
-        }catch (error) {
-            return false
+          const authToken = localStorage.getItem('token');
+          if (!authToken) {
+            console.error('Authentication token not found.');
+            return false;
+          }
+      
+          await axios.post('/logout', null, {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          });
+      
+          clearUser();
+      
+          localStorage.removeItem('token');
+      
+          router.push({ name: 'login' });
+      
+          return true;
+        } catch (error) {
+          console.error('Logout failed', error);
+          return false;
         }
-    }
+      }
+      
+    
     return {user, loadUser, clearUser, login, logout }
 })
