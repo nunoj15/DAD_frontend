@@ -14,11 +14,13 @@
         class="mt-0"
       >
       <v-list>
+        <router-link to="/profile">
           <v-list-item
             prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg"
             title="Sandra Adams"
             subtitle="sandra_a88@gmailcom"
           ></v-list-item>
+        </router-link>
         </v-list>
 
         <v-divider></v-divider>

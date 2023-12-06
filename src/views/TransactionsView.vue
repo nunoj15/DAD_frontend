@@ -9,7 +9,7 @@
       <v-btn
           block
           class="mb-8"
-          color="red"
+          color="green"
           size="small"
           variant="tonal"
           v-bind="props"
@@ -22,9 +22,9 @@
 
   <v-dialog v-model="dialog" max-width="500px">
     <v-card>
-      <v-card-title class="headline">
-        New transaction
-      </v-card-title>
+      <v-card-title class="bg-green" >
+      New transaction
+    </v-card-title>
 
       <v-card class="newTransaction">
         <v-form @submit.prevent="submitForm">
@@ -82,10 +82,10 @@
 
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="blue darken-1" text @click="closeDialog">
+        <v-btn color="red" text @click="closeDialog">
           Fechar
         </v-btn>
-        <v-btn  type="submit" color="blue darken-1" text @click="submitForm">
+        <v-btn  type="submit" color="green" text @click="submitForm">
           Criar
         </v-btn>
       </v-card-actions>

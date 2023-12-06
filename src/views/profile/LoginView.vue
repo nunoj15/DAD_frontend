@@ -81,7 +81,7 @@ const router = useRouter()
 import axios from 'axios';
 import { provide } from 'vue';
 const toast = inject('toast')
-import { useUserStore } from '../stores/user.js'
+import { useUserStore } from '../../stores/user.js'
 import io from 'socket.io-client';
 provide('axios', axios);
 const credentials = ref({
