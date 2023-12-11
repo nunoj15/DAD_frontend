@@ -42,6 +42,7 @@
   
   const router = useRouter();
   const toast = inject('toast');
+  const socket = inject("socket")
   const visible = ref(false);
   
   provide('axios', axios);
@@ -59,13 +60,24 @@
       console.log(response);
       toast.success('User ' + credentials.value.email + ' has entered the application.');
       localStorage.setItem('token', response.data.access_token);
-  
+      localStorage.setItem('user', credentials.value.email.toString())
       if (axios && axios.defaults) {
         axios.defaults.headers.common.Authorization = 'Bearer ' + response.data.access_token;
       }
+
+      let email = credentials.value.email.toString()
+      socket.emit('WebClientConnectInit', {
+        identifier: email,
+        sockeId: localStorage.getItem('socketId')
+      });
+
+      socket.on('ReceveidConnectInit', (data) => {
+      console.log('Mensagem recebida do servidor:', data);
+        localStorage.setItem('socketId', data)
+      });
   
       emit('login');
-      router.back();
+      router.push('/');
     } catch (error) {
       if (axios && axios.defaults) {
         delete axios.defaults.headers.common.Authorization;

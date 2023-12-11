@@ -6,6 +6,7 @@
 </script>
 
 <template>
+  <ToastComponent></ToastComponent>
   <v-layout v-if="isAuthenticated" class="w-100">
    <div border-color="red" class="w-100">
       <v-navigation-drawer
@@ -68,6 +69,7 @@ import { ref, onMounted, inject, computed } from 'vue';
 import { useUserStore } from './stores/user.js'
 import io from 'socket.io-client';
 import store from './socketClient.js';
+import ToastComponent from './components/ToastComponent.vue';
 const axios = inject("axios")
 const toast = inject("toast")
 const socket = inject("socket")
@@ -88,16 +90,6 @@ onMounted(() => {
 
 });
 
-console.log(socket)
-
-
-socket.on('ReceivedTransactionNotification', (data) => {
-console.log('Mensagem recebida do servidor:', data);
-
-  });
-
-
-
 const isAuthenticated = ref(false);
 
 // Check if the user is authenticated
@@ -108,10 +100,6 @@ const checkAuthentication = () => {
 
 // Call the function to check authentication when the component is mounted
 checkAuthentication();
-
-onMounted(() => {
-  // Fetch menu items or any other initial setup
-});
 
 </script>
 

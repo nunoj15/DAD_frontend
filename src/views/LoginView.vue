@@ -94,16 +94,19 @@ const socket = inject("socket")
 const login = async () => {
   try {
     const response = await axios.post('login', credentials.value);
+    
     toast.success('User ' + credentials.value.email + ' has entered the application.');
     localStorage.setItem('token', response.data.access_token)
-    localStorage.setItem('userEmail', credentials.value.email)
+    
     if (axios && axios.defaults) {
       axios.defaults.headers.common.Authorization = "Bearer " + response.data.access_token;
       console.log("")
     }
     
-
+    
     let email = credentials.value.email.toString()
+    const newSocket = io('http://localhost:3000', { query: { socketId: email } });
+    app.provide('socket', newSocket);
     socket.emit('WebClientConnectInit', {
       identifier: email,
     });

@@ -241,7 +241,7 @@ import {inject} from 'vue'
         transactionDescription: this.transactionDescription,
       });
 
-    let userEmail = localStorage.getItem('userEmail')
+    let userEmail = localStorage.getItem('user')
 
     
 
@@ -252,7 +252,7 @@ import {inject} from 'vue'
     });
 
     this.socket.on('ReceivedTransactionNotification', (data) => {
-console.log('Mensagem recebida do servidor:', data);
+      console.log('Mensagem recebida do servidor:', data);
 // Faça algo com a mensagem, como exibir uma notificação
   });
 
@@ -266,7 +266,8 @@ console.log('Mensagem recebida do servidor:', data);
       this.transactionCategory = "";
       this.transactionDescription = "";
     },
-  },
+  }
+
   }
 </script>
 

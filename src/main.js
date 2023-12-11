@@ -34,5 +34,14 @@ app.use(router)
 
 app.use(vuetify)  // Use o Vuetify no app
 
-app.provide('socket',io("http://localhost:3000"))
+const userEmail = localStorage.getItem('user');
+let socket = io("http://localhost:3000")
+app.provide('socket', socket)
+
+if(userEmail){
+    socket.emit('WebClientConnectInit', {
+        identifier: userEmail,
+      });
+}
+
 app.mount('#app')
