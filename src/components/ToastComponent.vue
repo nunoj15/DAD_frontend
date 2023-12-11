@@ -20,7 +20,6 @@ onMounted(() => {
 
 </script>
 <template>
-  reste teste teste teste 
 </template>
 
 <style scoped>

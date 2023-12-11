@@ -57,13 +57,17 @@
   const login = async () => {
     try {
       const response = await axios.post('/login', credentials.value);
-      console.log(response);
+
       toast.success('User ' + credentials.value.email + ' has entered the application.');
       localStorage.setItem('token', response.data.access_token);
-      localStorage.setItem('user', credentials.value.email.toString())
+
       if (axios && axios.defaults) {
         axios.defaults.headers.common.Authorization = 'Bearer ' + response.data.access_token;
       }
+
+      const user  = await axios.get('/users/me')
+      console.log(user)
+      localStorage.setItem('user', JSON.stringify(user?.data?.usuario))
 
       let email = credentials.value.email.toString()
       socket.emit('WebClientConnectInit', {
@@ -78,6 +82,7 @@
   
       emit('login');
       router.push('/');
+      location.reload();
     } catch (error) {
       if (axios && axios.defaults) {
         delete axios.defaults.headers.common.Authorization;

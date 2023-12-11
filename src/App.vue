@@ -17,8 +17,8 @@
       <v-list>
           <v-list-item
             prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg"
-            title="Sandra Adams"
-            subtitle="sandra_a88@gmailcom"
+            :title="user.name"
+            :subtitle="user.email"
           ></v-list-item>
         </v-list>
 
@@ -75,6 +75,7 @@ const toast = inject("toast")
 const socket = inject("socket")
 const menuItems = ref([]);
 let token = ref('');
+let user = ref(null)
 const userStore = useUserStore()
 const router = useRouter();
 
@@ -87,19 +88,15 @@ onMounted(() => {
     token.value = localStorage.getItem('token')
     console.log(token.value)
 
-
+    user = JSON.parse(localStorage.getItem('user'))
 });
 
+user = JSON.parse(localStorage.getItem('user'))
 const isAuthenticated = ref(false);
 
-// Check if the user is authenticated
-const checkAuthentication = () => {
-  const authToken = localStorage.getItem('token');
-  isAuthenticated.value = !!authToken; // Update isAuthenticated based on the presence of the token
-};
+const authToken = localStorage.getItem('token');
+isAuthenticated.value = !!authToken; 
 
-// Call the function to check authentication when the component is mounted
-checkAuthentication();
 
 </script>
 

@@ -23,7 +23,17 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: Login
+      component: Login,
+      beforeEnter: (to, from, next) => {
+        // Verificar a presença do token no localStorage
+        const token = localStorage.getItem('token');
+
+        if (token) {
+          next('/');
+        } else {
+          next();
+        }
+      },
     },
     {
       path: '/register',

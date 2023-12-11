@@ -156,7 +156,7 @@
 import io from 'socket.io-client';
 import store from '../socketClient';
 import {inject} from 'vue'
-
+import axios from 'axios';
   export default {
     inject:["socket"],
     data () {
@@ -168,43 +168,7 @@ import {inject} from 'vue'
         transactionDescription: "",
         dialog: false,
         search: '',
-        items: [
-          {
-            name: 'Nebula GTX 3080',
-            image: '1.png',
-            price: 699.99,
-            rating: 5,
-            stock: true,
-          },
-          {
-            name: 'Galaxy RTX 3080',
-            image: '2.png',
-            price: 799.99,
-            rating: 4,
-            stock: false,
-          },
-          {
-            name: 'Orion RX 6800 XT',
-            image: '3.png',
-            price: 649.99,
-            rating: 3,
-            stock: true,
-          },
-          {
-            name: 'Vortex RTX 3090',
-            image: '4.png',
-            price: 1499.99,
-            rating: 4,
-            stock: true,
-          },
-          {
-            name: 'Cosmos GTX 1660 Super',
-            image: '5.png',
-            price: 299.99,
-            rating: 4,
-            stock: false,
-          },
-        ],
+        items:[],
         breadCrumb: [
         {
           title: 'Dashboard',
@@ -224,6 +188,14 @@ import {inject} from 'vue'
       ],
       }
     },
+    async mounted () {
+      let token = localStorage.getItem('token')
+      if (axios && axios.defaults) {
+        axios.defaults.headers.common.Authorization = 'Bearer ' + token;
+      }
+      this.items = await axios.get('/admin-transactions' );
+      console.log(this.items)
+    },
     methods: {
     openDialog() {
       this.dialog = true;
@@ -241,12 +213,12 @@ import {inject} from 'vue'
         transactionDescription: this.transactionDescription,
       });
 
-    let userEmail = localStorage.getItem('user')
+    let user = JSON.parse(localStorage.getItem('user'))
 
     
 
     this.socket.emit('SendTransactionNotification', {
-      from: userEmail,
+      from: user.email,
       to:this.recipient,
       value: this.transactionValue
     });
