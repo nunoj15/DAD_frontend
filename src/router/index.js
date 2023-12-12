@@ -4,6 +4,9 @@ import VCards from '../components/VCardComponent.vue'
 import Login from '../components/LoginComponent.vue'
 import RegisterView from '../views/RegisterView.vue'
 import TransactionsView from '../views/TransactionsView.vue'
+import UserProfileView from "../views/profile/UserProfileView.vue"
+import ChangeProfileView from "../views/profile/ChangeProfileView.vue";
+import ChangePasswordView from "../views/profile/ChangePasswordView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,7 +48,25 @@ const router = createRouter({
       name: 'transactions',
       component: TransactionsView,
       meta: { requiresAuth: true }
-    }
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: UserProfileView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/changeDetails',
+      name: 'changeDetails',
+      component: ChangeProfileView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/changePassword',
+      name: 'changePassword',
+      component: ChangePasswordView,
+      meta: { requiresAuth: true }
+    },
   ]
 })
 
