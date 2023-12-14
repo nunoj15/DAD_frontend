@@ -1,10 +1,3 @@
-<script setup>
-
-
-
-
-</script>
-
 <template>
   <ToastComponent></ToastComponent>
   <v-layout v-if="isAuthenticated" class="w-100">
@@ -26,7 +19,7 @@
 
         <v-divider></v-divider>
 
-        <v-list nav >
+        <v-list nav v-if="isAuthenticated">
           <v-list-item v-for="item in menuItems" :key="item.id">
             <v-expansion-panels class="shadow-none p-0" v-if="item.children">
               <v-expansion-panel>
@@ -35,21 +28,16 @@
                   <v-list-item v-for="child in item.children" :key="child.id" >
                     <RouterLink :to="child.link">{{ child.title }}</RouterLink>
                   </v-list-item>
-                  <v-list-item>
-                    <a class="dropdown-item" @click.prevent="logout">
-                      Logout
-                    </a>
-                  </v-list-item>
                 </v-expansion-panel-text>
               </v-expansion-panel>
             </v-expansion-panels>
             <RouterLink class="p-2"  v-if="!item.children" :to="item.link">{{ item.title }}</RouterLink>
           </v-list-item>
+          <v-list-item @click="logout">Logout</v-list-item>
         </v-list>
       </v-navigation-drawer>
     <div class="router-view">
-      <VCardComponent />
-
+      
         <RouterView />
     </div>
   </div>
@@ -63,7 +51,6 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import Login from './components/LoginComponent.vue';
-import NavBarComponent from './components/NavBarComponent.vue';
 import ContentComponent from './components/ContentComponent.vue';
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
@@ -72,7 +59,8 @@ import { useUserStore } from './stores/user.js'
 import io from 'socket.io-client';
 import store from './socketClient.js';
 import ToastComponent from './components/ToastComponent.vue';
-const axios = inject("axios")
+import axios from 'axios';
+
 const toast = inject("toast")
 const socket = inject("socket")
 const menuItems = ref([]);
@@ -80,6 +68,28 @@ let token = ref('');
 let user = ref(null)
 const userStore = useUserStore()
 const router = useRouter();
+
+
+const logout = async () => {
+  try {
+    isAuthenticated.value = false;
+
+    await axios.post('/logout', null, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+
+    router.push('/login');
+  } catch (error) {
+    console.error('Logout failed:', error);
+  }
+};
+
+
 
 onMounted(() => {
   fetch('/menu.json')
@@ -92,6 +102,10 @@ onMounted(() => {
 
     user = JSON.parse(localStorage.getItem('user'))
 });
+
+methods:{
+
+}
 
 user = JSON.parse(localStorage.getItem('user'))
 const isAuthenticated = ref(false);
