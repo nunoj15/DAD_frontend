@@ -112,42 +112,32 @@
     </v-card-title>
 
     <v-divider></v-divider>
-    <v-data-table v-model:search="search" :items="items">
+    <v-data-table 
+    v-model:search="search"
+    :items="items"
+    :headers="customHeaders"
+    :loading="loading"
+    :items-per-page="itemsPerPage"
+    :page.sync="currentPage"
+    :total-items="totalItems"
+    :items-length="totalItems"
+    @update:options="loadItems">
       <template v-slot:header.stock>
         <div class="text-end">Stock</div>
       </template>
-
-      <template v-slot:item.image="{ item }">
-        <v-card class="my-2" elevation="2" rounded>
-          <v-img
-            :src="`https://cdn.vuetifyjs.com/docs/images/graphics/gpus/${item.image}`"
-            height="64"
-            cover
-          ></v-img>
-        </v-card>
-      </template>
-
-      <template v-slot:item.rating="{ item }">
-        <v-rating
-          :model-value="item.rating"
-          color="orange-darken-2"
-          density="compact"
-          size="small"
-          readonly
-        ></v-rating>
-      </template>
-
-      <template v-slot:item.stock="{ item }">
-        <div class="text-end">
-          <v-chip
-            :color="item.stock ? 'green' : 'red'"
-            :text="item.stock ? 'In stock' : 'Out of stock'"
-            class="text-uppercase"
-            label
-            size="small"
-          ></v-chip>
-        </div>
-      </template>
+      <template v-slot:header="{ header }">
+      <thead>
+        <tr>
+          <th
+            v-for="col in header"
+            :key="col.value"
+            :class="{ 'text-left': col.value === 'id' }"
+          >
+            {{ col.text }}
+          </th>
+        </tr>
+      </thead>
+    </template>
     </v-data-table>
   </v-card>
 
@@ -166,9 +156,24 @@ import axios from 'axios';
         recipient: "",
         transactionCategory: "",
         transactionDescription: "",
+        user: JSON.parse(localStorage.getItem('user')),
         dialog: false,
         search: '',
         items:[],
+        loading: true,
+        currentPage: 1,
+        itemsPerPage: 10,
+        totalItems: 0,
+        customHeaders:[
+        { title: 'Vcard Number', key: 'vcard', align: 'end' },
+        { title: 'Date & time', key: 'datetime', align: 'end' },
+        { title: 'Type', key: 'type', align: 'end' },
+        { title: 'Value', key: 'value', align: 'end' },
+        { title: 'Old balance (%)', key: 'old_balance', align: 'end' },
+        { title: 'New Balance', key: 'new_balance', align: 'end' },
+        { title: 'Payment Type', key: 'payment_type', align: 'end' },
+        { title: 'Payment Reference', key: 'payment_reference', align: 'end' },
+      ],
         breadCrumb: [
         {
           title: 'Dashboard',
@@ -189,12 +194,17 @@ import axios from 'axios';
       }
     },
     async mounted () {
+      let user = JSON.parse(localStorage.getItem('user'))
+
       let token = localStorage.getItem('token')
       if (axios && axios.defaults) {
         axios.defaults.headers.common.Authorization = 'Bearer ' + token;
       }
-      this.items = await axios.get('/admin-transactions' );
-      console.log(this.items)
+      let items = user.user_type === "A" ? await axios.get(`/admin-transactions/${this.currentPage}/${this.itemsPerPage}`) :
+      await axios.get(`/owners-transactions?page=${this.currentPage}&itemsPerPage=${this.itemsPerPage}&vcardNumber=${this.user.username}`);
+      this.items = items.data.transactions
+      this.totalItems = items.data.total
+
     },
     methods: {
     openDialog() {
@@ -238,6 +248,17 @@ import axios from 'axios';
       this.transactionCategory = "";
       this.transactionDescription = "";
     },
+    async loadItems ({ page, itemsPerPage, sortBy }) {
+
+        this.loading = true
+        this.currentPage = page
+        this.itemsPerPage = itemsPerPage
+        let items = this.user.user_type === "A" ? await axios.get(`/admin-transactions/${this.currentPage}/${this.itemsPerPage}`) :
+        await axios.get(`/owners-transactions?page=${this.currentPage}&itemsPerPage=${this.itemsPerPage}&vcardNumber=${this.user.username}`);
+        this.items = items.data.transactions
+        this.totalItems = items.data.total
+        this.loading = false
+      },
   }
 
   }
