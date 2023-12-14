@@ -5,6 +5,8 @@ export const useUserStore = defineStore('user', () => {
     const serverBaseUrl = inject('serverBaseUrl')
     const user = ref(null)
 
+    const userId = computed(() => user.value?.id ?? -1)
+
     async function loadUser () {
         try {
             const response = await axios.get('users/me')

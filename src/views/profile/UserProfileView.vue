@@ -12,28 +12,16 @@
       </div>
       <v-row>
         <v-col cols="12">
-          <v-text-field v-model="profile.name" label="Nome" readonly></v-text-field>
+          <v-text-field v-model="profile.name" disabled readonly>{{user.name}}</v-text-field>
         </v-col>
       </v-row>
 
       <v-row>
         <v-col cols="12">
-          <v-text-field v-model="profile.email" label="E-mail" readonly></v-text-field>
+          <v-text-field v-model="profile.email" disabled readonly>{{user.email}}</v-text-field>
         </v-col>
       </v-row>
 
-
-      <v-row>
-        <v-col cols="12">
-          <v-text-field v-model="profile.confirmationCode" label="Confirmation Code" readonly></v-text-field>
-        </v-col>
-      </v-row>
-
-      <v-row>
-        <v-col cols="12">
-          <v-btn @click="saveProfile" color="green">Salvar</v-btn>
-        </v-col>
-      </v-row>
 
     </v-form>
   </v-container>
@@ -41,6 +29,11 @@
 
 <script>
 export default {
+  computed:{
+     user(){
+        return JSON.parse(localStorage.getItem('user'));
+     }
+  } ,
   data() {
     return {
       profile: {

@@ -11,25 +11,25 @@
     </div>
     <v-row>
       <v-col cols="12">
-        <v-text-field v-model="profile.oldPassword" label="Old Password" ></v-text-field>
+        <v-text-field :type="visible ? 'text' : 'password'" v-model="profile.oldPassword" label="Old Password" ></v-text-field>
       </v-col>
     </v-row>
 
     <v-row>
       <v-col cols="12">
-        <v-text-field v-model="profile.newPassword" label="New Password" ></v-text-field>
+        <v-text-field :type="visible ? 'text' : 'password'" v-model="profile.newPassword" label="New Password" ></v-text-field>
       </v-col>
     </v-row>
 
     <v-row>
       <v-col cols="12">
-        <v-text-field v-model="profile.newPasswordConfirmation" label="Confirm the Password" ></v-text-field>
+        <v-text-field :type="visible ? 'text' : 'password'" v-model="profile.newPasswordConfirmation" label="Confirm the Password" ></v-text-field>
       </v-col>
     </v-row>
 
     <v-row>
       <v-col cols="12">
-        <v-btn @click="saveProfile" color="green">Salvar</v-btn>
+        <v-btn @click="changePassword" color="green">Change</v-btn>
       </v-col>
     </v-row>
 
@@ -44,7 +44,7 @@ export default {
       profile: {
         oldPassword:'',
         newPassword:'',
-        newPasswordConfirmation:''
+        confirmPassword:''
       },
       breadCrumb: [
         {
@@ -66,8 +66,18 @@ export default {
     };
   },
   methods: {
-    saveProfile() {
-      console.log('Perfil salvo:', this.profile);
+    async changePassword() {
+      try {
+        const response = await axios.patch(`users/1/password`, {
+          old_password: this.oldPassword,
+          new_password: this.newPassword,
+          confirm_password: this.confirmPassword,
+        });
+
+        console.log(response.data.message);
+      } catch (error) {
+        console.error(error.response.data.message);
+      }
     },
   },
 };
