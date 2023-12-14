@@ -73,7 +73,6 @@ const canViewAdminData = (userId) => {
 
 const filteredVcards = computed(() => {
   return vcards.value.filter((vcard) => {
-    // Implement your custom filtering logic here based on filterByPhoneNumber and filterByEmail
     const phoneNumberMatch = vcard.phone_number.toLowerCase().includes(filterByPhoneNumber.value.toLowerCase());
     const emailMatch = vcard.email.toLowerCase().includes(filterByEmail.value.toLowerCase());
 
