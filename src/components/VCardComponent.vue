@@ -1,56 +1,65 @@
 <template>
-  <div class="mb-3 d-flex justify-content-between flex-wrap" style="color: white; padding-bottom: 10px;">
-    <div class="mx-2 mt-2 flex-grow-1 filter-div">
-      <label for="filterPhoneNumber" class="form-label">Filter by Phone Number:</label>
-      <input type="text" class="form-control filter-input" v-model="filterByPhoneNumber" id="filterPhoneNumber">
+  <div class="table-container">
+    <div class="filter-section">
+      <div class="filter-div">
+        <label for="filterPhoneNumber" class="form-label">Filter by Phone Number:</label>
+        <input type="text" class="form-control filter-input" v-model="filterByPhoneNumber" id="filterPhoneNumber">
+      </div>
+      <div class="filter-div">
+        <label for="filterByEmail" class="form-label">Filter by Email:</label>
+        <input type="text" class="form-control filter-input" v-model="filterByEmail" id="filterByEmail">
+      </div>
     </div>
-    <div class="mx-2 mt-2 flex-grow-1 filter-div">
-      <label for="filterByEmail" class="form-label">Filter by Email:</label>
-      <input type="text" class="form-control filter-input" v-model="filterByEmail" id="filterByEmail">
-    </div>
+
+    <hr />
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Phone Number</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th v-if="canViewAdminData(user.id)">Blocked?</th>
+          <th v-if="canViewAdminData(user.id)">Balance</th>
+          <th v-if="canViewAdminData(user.id)">Max Debit</th>
+          <th v-if="canViewAdminData(user.id)">MORE OPTIONS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="vcard in filteredVcards" :key="vcard.phone_number">
+          <td>{{ vcard.phone_number }}</td>
+          <td>{{ vcard.name }}</td>
+          <td>{{ vcard.email }}</td>
+          <td v-if="canViewAdminData(user.id)">{{ vcard.blocked ? 'Yes' : 'No' }}</td>
+          <td v-if="canViewAdminData(user.id)">{{ vcard.balance }}</td>
+          <td v-if="canViewAdminData(user.id)">
+            <div class="admin-options">
+              <input type="text" v-model="vcard.max_debit" style="max-width: 100px;" class="max-debit-input">
+              <v-btn @click="saveClick(vcard)" class="save-btn" style="background-color: green;">Save</v-btn>
+            </div>
+          </td>
+          <td v-if="canViewAdminData(user.id)" class="admin-options">
+            <v-btn @click="blockClick(vcard)" class="block-btn" style="background-color: red;">{{ vcard.blocked ? 'Unblock'
+              : 'Block' }}</v-btn>
+            <v-btn @click="deleteClick(vcard)" class="delete-btn" style="background-color: gray;">Delete</v-btn>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
-
-  <hr />
-
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Phone Number</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th v-if="canViewAdminData(user.id)" class="align-middle">Blocked?</th>
-        <th v-if="canViewAdminData(user.id)" class="align-middle">Balance</th>
-        <th v-if="canViewAdminData(user.id)" class="align-middle">Max Debit</th>
-        <th v-if="canViewAdminData(user.id)" class="align-middle">ADMIN OPTIONS</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr v-for="vcard in filteredVcards" :key="vcard.id">
-        <td>{{ vcard.phone_number }}</td>
-        <td >{{ vcard.name }}</td>
-        <td>{{ vcard.email }}</td>
-        <td v-if="canViewAdminData(user.id)" class="align-middle">
-          {{ vcard.blocked == 1 ? 'Yes' : 'No'}}
-        </td>
-        <td v-if="canViewAdminData(user.id)" class="align-middle">{{ vcard.balance }}</td>
-        <td v-if="canViewAdminData(user.id)" class="align-middle">{{ vcard.max_debit }}</td>
-        <td v-if="canViewAdminData(user.id)" class="align-middle" style="text-align: justify;">
-          <v-btn style="background-color: red;">Block</v-btn>
-          <v-btn style="background-color: gray;"><i class="bi bi-lock-fill"></i>Delete</v-btn>
-        </td>
-      </tr>
-    </tbody>
-  </table>
 </template>
 
 <script setup>
 import axios from 'axios';
 import { ref, onMounted, computed } from 'vue';
 import { useUserStore } from '../stores/user.js';
+import { useToast } from "vue-toastification"
 
+const toast = useToast()
 const currentPage = ref(1);
 const vcards = ref([]);
 let user = ref(null);
+let newBlockedState;
 
 const filterByPhoneNumber = ref('');
 const filterByEmail = ref('');
@@ -59,9 +68,7 @@ const canViewAdminData = (userId) => {
   if (!userId) {
     return false;
   }
-  console.log(user.type)
-  //return user.type == 'A'
-  return true;
+  return user.user_type == "A"
 }
 
 const filteredVcards = computed(() => {
@@ -92,7 +99,56 @@ const loadPage = async (page) => {
 
     currentPage.value = response.data.current_page;
   } catch (error) {
-    console.error('Error fetching vcards', error);
+    toast.error('Error fetching vcards', error);
+  }
+};
+
+const saveClick = async (vcard) => {
+  try {
+    const authToken = localStorage.getItem('token');
+    if (!authToken) {
+      console.error('Authentication token not found.');
+      return;
+    }
+    console.log(vcard.max_debit)
+    // Use vcard as a parameter to get the ID or any other necessary data
+    const response = await axios.put(`/vcards/${vcard.phone_number}`, {
+      max_debit: vcard.max_debit,
+    }, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+
+    console.log('Max Debit updated successfully:', response.data);
+  } catch (error) {
+    console.error('Error updating Max Debit:', error);
+  }
+};
+
+const blockClick = async (vcard) => {
+  try {
+    const authToken = localStorage.getItem('token');
+    if (!authToken) {
+      console.error('Authentication token not found.');
+      return;
+    }
+
+    const newBlockedState = vcard.blocked == 1 ? 0 : 1; // Toggle the blocked state
+
+    console.log(newBlockedState)
+
+    const response = await axios.put(`/vcards/${vcard.phone_number}`, {
+      blocked: newBlockedState,
+    }, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+
+    console.log('Block/Unblock successful:', response.data);
+  } catch (error) {
+    console.error('Error Block/Unblock:', error);
   }
 };
 
@@ -103,56 +159,58 @@ user = JSON.parse(localStorage.getItem('user'));
 </script>
 
 <style>
+.filter-section {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 10px;
+  /* Add padding for separation */
+}
+
+.filter-div {
+  flex-grow: 1;
+  margin: 0 10px;
+  color: white;
+}
+
 .table {
-  font-family: Arial, Helvetica, sans-serif;
-  border-collapse: collapse;
   width: 100%;
-  color: black;
-  margin-top: 10px;
-  text-align: center;
   border-collapse: collapse;
+  margin-top: 10px;
+  background-color: white;
+  /* Set background to white */
+  color: black;
 }
 
-.table td,
-.table th {
+.table th,
+.table td {
   border: 1px solid #ddd;
+  padding: 8px;
   text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  width:auto;
+  background-color: white;
+  /* Set background to white */
 }
 
-.table tr {
+.table th {
+  background-color: #04AA6D;
+  color: white;
+}
+
+.table tr:nth-child(even) {
   background-color: #f2f2f2;
 }
 
-.table tr:hover {
-  background-color: #ddd;
+.filter-input,
+.max-debit-input {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  background-color: white;
 }
 
-.table th {
-  padding-top: 12px;
-  padding-bottom: 12px;
-  text-align: left;
-  background-color: #04AA6D;
-  color: white;
-  text-align: center;
-  width:auto;
+.admin-options {
+  display: flex;
+  justify-content: space-between;
 }
-
-.filter-input {
-  border: 1px solid #ccc;
-  width: 100%; /* Make the text boxes span the full width */
-  background-color: white; /* Set the background color to white */
-  color: black; /* Set the text color to black */
-}
-
-.button {
-  width: 35px !important;
-  height: 35px !important;
-  font-size: 10px;
-  border-radius: 10%;
-}
-
 </style>
 
