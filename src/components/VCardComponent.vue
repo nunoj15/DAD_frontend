@@ -17,6 +17,7 @@
       <thead>
         <tr>
           <th>Phone Number</th>
+          <th v-if="canViewAdminData(user.id)">Photo</th>
           <th>Name</th>
           <th>Email</th>
           <th v-if="canViewAdminData(user.id)">Blocked?</th>
@@ -28,6 +29,9 @@
       <tbody>
         <tr v-for="vcard in filteredVcards" :key="vcard.phone_number">
           <td>{{ vcard.phone_number }}</td>
+          <td v-if="canViewAdminData(user.id)" class="align-middle">
+            <img :src="photoFullUrl(vcard)" class="rounded-circle img_photo" />
+          </td>
           <td>{{ vcard.name }}</td>
           <td>{{ vcard.email }}</td>
           <td v-if="canViewAdminData(user.id)">{{ vcard.blocked ? 'Yes' : 'No' }}</td>
@@ -38,10 +42,10 @@
               <v-btn @click="saveClick(vcard)" class="save-btn" style="background-color: green;">Save</v-btn>
             </div>
           </td>
-          <td v-if="canViewAdminData(user.id)" class="admin-options">
-            <v-btn @click="blockClick(vcard)" class="block-btn" style="background-color: red;">{{ vcard.blocked ? 'Unblock'
-              : 'Block' }}</v-btn>
-            <v-btn @click="deleteClick(vcard)" class="delete-btn" style="background-color: gray;">Delete</v-btn>
+          <td v-if="canViewAdminData(user.id)">
+            <v-btn @click="blockClick(vcard)" style="background-color: red;">{{ vcard.blocked ? 'Unblock' : 'Block' }}</v-btn>
+            <v-btn v-if="vcard.balance == 0" @click="deleteClick(vcard)" style="background-color: gray;">Delete</v-btn>
+            <v-btn v-if="vcard.balance != 0" @click="deleteClick(vcard)" style="background-color: gray;" disabled>Delete</v-btn>
           </td>
         </tr>
       </tbody>
@@ -51,9 +55,10 @@
 
 <script setup>
 import axios from 'axios';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, inject } from 'vue';
 import { useUserStore } from '../stores/user.js';
 import { useToast } from "vue-toastification"
+const serverBaseUrl = inject("serverBaseUrl");
 
 const toast = useToast()
 const currentPage = ref(1);
@@ -69,6 +74,11 @@ const canViewAdminData = (userId) => {
     return false;
   }
   return user.user_type == "A"
+}
+
+const photoFullUrl = (vcard) => {
+  return vcard.photo_url ? serverBaseUrl + "/storage/fotos/" + vcard.photo_url
+    : null;
 }
 
 const filteredVcards = computed(() => {
@@ -109,7 +119,6 @@ const saveClick = async (vcard) => {
       console.error('Authentication token not found.');
       return;
     }
-    console.log(vcard.max_debit)
     // Use vcard as a parameter to get the ID or any other necessary data
     const response = await axios.put(`/vcards/${vcard.phone_number}`, {
       max_debit: vcard.max_debit,
@@ -135,8 +144,6 @@ const blockClick = async (vcard) => {
 
     const newBlockedState = vcard.blocked == 1 ? 0 : 1; // Toggle the blocked state
 
-    console.log(newBlockedState)
-
     const response = await axios.put(`/vcards/${vcard.phone_number}`, {
       blocked: newBlockedState,
     }, {
@@ -146,8 +153,31 @@ const blockClick = async (vcard) => {
     });
 
     console.log('Block/Unblock successful:', response.data);
+    loadPage(currentPage.value);
   } catch (error) {
     console.error('Error Block/Unblock:', error);
+  }
+};
+
+const deleteClick = async (vcard) => {
+  try {
+    const authToken = localStorage.getItem('token');
+    if (!authToken) {
+      console.error('Authentication token not found.');
+      return;
+    }
+
+    const response = await axios.delete(`/vcards/${vcard.phone_number}`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+
+    console.log(response.data);
+    loadPage(currentPage.value);
+  } catch (error) {
+    console.error('Error Delete:', error);
   }
 };
 
@@ -210,6 +240,11 @@ user = JSON.parse(localStorage.getItem('user'));
 .admin-options {
   display: flex;
   justify-content: space-between;
+}
+
+.img_photo {
+  width: 3.2rem;
+  height: 3.2rem;
 }
 </style>
 
