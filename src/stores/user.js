@@ -5,7 +5,7 @@ export const useUserStore = defineStore('user', () => {
     const serverBaseUrl = inject('serverBaseUrl')
     const user = ref(null)
 
-    const userId = computed(() => user.value?.id ?? -1)
+    const userStored = JSON.parse(localStorage.getItem('user'));
 
     async function loadUser () {
         try {
@@ -56,7 +56,34 @@ export const useUserStore = defineStore('user', () => {
           return false;
         }
       }
-      
-    
-    return {user, loadUser, clearUser, login, logout }
+    async function changePassword(credentials) {
+        try {
+            let token = localStorage.getItem("token");
+
+            if (!token) {
+                throw new Error('Authentication token is missing.');
+            }
+
+            if (axios && axios.defaults) {
+                axios.defaults.headers.common.Authorization = 'Bearer ' + token;
+            }
+
+            if (userStored.id < 0) {
+                throw new Error('Anonymous users cannot change the password!');
+            }
+
+            const response = await axios.patch(`users/${userStored.id}/password`, credentials);
+
+            // Optionally, you can return the response data if needed
+            return response.data;
+        } catch (error) {
+            // Handle errors or rethrow for the calling code to handle
+            console.error('Change password failed:', error.message);
+            throw error;
+        }
+    }
+
+
+
+    return {user, loadUser, clearUser, login, logout, userStored , changePassword}
 })

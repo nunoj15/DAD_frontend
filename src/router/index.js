@@ -28,12 +28,14 @@ const router = createRouter({
       name: 'login',
       component: Login,
       beforeEnter: (to, from, next) => {
-        // Verificar a presença do token no localStorage
+        // Check for the presence of the token in localStorage
         const token = localStorage.getItem('token');
 
         if (token) {
+          // If a token is present, redirect to the home page
           next('/');
         } else {
+          // If no token is present, allow the navigation to the login page
           next();
         }
       },
@@ -41,7 +43,8 @@ const router = createRouter({
     {
       path: '/register',
       name: 'register',
-      component: RegisterView
+      component: RegisterView,
+      meta: { requiresAuth: false }
     },
     {
       path: '/transactions',
