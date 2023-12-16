@@ -19,43 +19,6 @@ export const useUserStore = defineStore('user', () => {
     function clearUser () {
         user.value = null
     }
-    async function login(credentials) {
-        try {
-            const response = await axios.post('login', credentials.value);
-            axios.defaults.headers.common.Authorization = "Bearer " + response.data.access_token;
-            await loadUser()
-            return true
-        } catch (error) {
-            clearUser()
-            return false
-        }
-    };
-    async function logout() {
-        try {
-          const authToken = localStorage.getItem('token');
-          if (!authToken) {
-            console.error('Authentication token not found.');
-            return false;
-          }
-      
-          await axios.post('/logout', null, {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
-          });
-      
-          clearUser();
-      
-          localStorage.removeItem('token');
-      
-          router.push({ name: 'login' });
-      
-          return true;
-        } catch (error) {
-          console.error('Logout failed', error);
-          return false;
-        }
-      }
     async function changePassword(credentials) {
         try {
             let token = localStorage.getItem("token");
@@ -82,8 +45,6 @@ export const useUserStore = defineStore('user', () => {
             throw error;
         }
     }
-
-
-
-    return {user, loadUser, clearUser, login, logout, userStored , changePassword}
+    
+    return {user, loadUser, clearUser, changePassword}
 })
