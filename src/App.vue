@@ -1,51 +1,34 @@
 <template>
   <ToastComponent></ToastComponent>
   <v-layout v-if="isAuthenticated" class="w-100">
-   <div border-color="red" class="w-100">
-      <v-navigation-drawer
-        permanent
-        theme="dark"
-        class="mt-0"
-      >
-      <v-list>
-        <router-link to="/profile">
-          <v-list-item
-            prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg"
-            :title="user.name"
-            :subtitle="user.email"
-          ></v-list-item>
-        </router-link>
+    <div border-color="red" class="w-100">
+      <v-navigation-drawer permanent theme="dark" class="mt-0">
+        <v-list>
+          <router-link to="/profile">
+            <v-list-item prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg" :title="user.name"
+              :subtitle="user.email"></v-list-item>
+          </router-link>
         </v-list>
 
         <v-divider></v-divider>
 
         <v-list nav v-if="isAuthenticated">
           <v-list-item v-for="item in menuItems" :key="item.id">
-            <v-expansion-panels class="shadow-none p-0" v-if="item.children">
-              <v-expansion-panel>
-                <v-expansion-panel-title>{{ item.title }}</v-expansion-panel-title>
-                <v-expansion-panel-text>
-                  <v-list-item v-for="child in item.children" :key="child.id" >
-                    <RouterLink :to="child.link">{{ child.title }}</RouterLink>
-                  </v-list-item>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
-            </v-expansion-panels>
-            <RouterLink class="p-2"  v-if="!item.children" :to="item.link">{{ item.title }}</RouterLink>
+            <RouterLink class="p-2" v-if="userCanView(item.id)" :to="item.link">{{ item.title }}</RouterLink>
           </v-list-item>
           <v-list-item @click="logout">Logout</v-list-item>
         </v-list>
       </v-navigation-drawer>
-    <div class="router-view">
-      
-        <RouterView />
-    </div>
-  </div>
-</v-layout>
-<div v-if="!isAuthenticated" class="router-view">
+      <div class="router-view">
 
         <RouterView />
+      </div>
     </div>
+  </v-layout>
+  <div v-if="!isAuthenticated" class="router-view">
+
+    <RouterView />
+  </div>
 </template>
 
 <script setup>
@@ -89,21 +72,29 @@ const logout = async () => {
   }
 };
 
+const userCanView = (item) => {
+  if (user.user_type == "V" && item == 4) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
 
 
 onMounted(() => {
   fetch('/menu.json')
-      .then(response => response.json())
-      .then(data => {
-        menuItems.value = data.menu;
-      });
-    token.value = localStorage.getItem('token')
-    console.log(token.value)
+    .then(response => response.json())
+    .then(data => {
+      menuItems.value = data.menu;
+    });
+  token.value = localStorage.getItem('token')
+  console.log(token.value)
 
-    user = JSON.parse(localStorage.getItem('user'))
+  user = JSON.parse(localStorage.getItem('user'))
 });
 
-methods:{
+methods: {
 
 }
 
@@ -111,7 +102,7 @@ user = JSON.parse(localStorage.getItem('user'))
 const isAuthenticated = ref(false);
 
 const authToken = localStorage.getItem('token');
-isAuthenticated.value = !!authToken; 
+isAuthenticated.value = !!authToken;
 
 
 </script>
@@ -119,12 +110,13 @@ isAuthenticated.value = !!authToken;
 
 
 <style scoped>
-.router-view{
+.router-view {
   margin-left: 256px;
   width: calc(100hv-256px);
   align-items: center;
 
 }
+
 header {
   line-height: 1.5;
   max-height: 100vh;

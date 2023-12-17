@@ -2,12 +2,12 @@
   <div class="table-container">
     <div class="filter-section">
       <div class="filter-div">
-        <label for="filterPhoneNumber" class="form-label">Filter by Phone Number:</label>
-        <input type="text" class="form-control filter-input" v-model="filterByPhoneNumber" id="filterPhoneNumber">
+        <input type="text" class="form-control filter-input" placeholder="Filter by Phone Number"
+          v-model="filterByPhoneNumber" id="filterPhoneNumber">
       </div>
       <div class="filter-div">
-        <label for="filterByEmail" class="form-label">Filter by Email:</label>
-        <input type="text" class="form-control filter-input" v-model="filterByEmail" id="filterByEmail">
+        <input type="text" class="form-control filter-input" placeholder="Filter by Email" v-model="filterByEmail"
+          id="filterByEmail">
       </div>
     </div>
 
@@ -43,9 +43,11 @@
             </div>
           </td>
           <td v-if="canViewAdminData(user.id)">
-            <v-btn @click="blockClick(vcard)" style="background-color: red;">{{ vcard.blocked ? 'Unblock' : 'Block' }}</v-btn>
+            <v-btn @click="blockClick(vcard)" style="background-color: red;">{{ vcard.blocked ? 'Unblock' : 'Block'
+            }}</v-btn>
             <v-btn v-if="vcard.balance == 0" @click="deleteClick(vcard)" style="background-color: gray;">Delete</v-btn>
-            <v-btn v-if="vcard.balance != 0" @click="deleteClick(vcard)" style="background-color: gray;" disabled>Delete</v-btn>
+            <v-btn v-if="vcard.balance != 0" @click="deleteClick(vcard)" style="background-color: gray;"
+              disabled>Delete</v-btn>
           </td>
         </tr>
       </tbody>
@@ -58,9 +60,9 @@ import axios from 'axios';
 import { ref, onMounted, computed, inject } from 'vue';
 import { useUserStore } from '../stores/user.js';
 import { useToast } from "vue-toastification"
+const toast = inject('toast')
 const serverBaseUrl = inject("serverBaseUrl");
 
-const toast = useToast()
 const currentPage = ref(1);
 const vcards = ref([]);
 let user = ref(null);
@@ -129,8 +131,10 @@ const saveClick = async (vcard) => {
     });
 
     console.log('Max Debit updated successfully:', response.data);
+    toast.success('Max Debit updated successfully!!!');
   } catch (error) {
     console.error('Error updating Max Debit:', error);
+    toast.success('Error updating Max Debit:', error);
   }
 };
 
@@ -153,9 +157,11 @@ const blockClick = async (vcard) => {
     });
 
     console.log('Block/Unblock successful:', response.data);
+    toast.success('Block/Unblock successful!!!');
     loadPage(currentPage.value);
   } catch (error) {
     console.error('Error Block/Unblock:', error);
+    toast.success('Error Block/Unblock:', error);
   }
 };
 
@@ -175,9 +181,11 @@ const deleteClick = async (vcard) => {
       });
 
     console.log(response.data);
+    toast.success('Delete successful!!!');
     loadPage(currentPage.value);
   } catch (error) {
-    console.error('Error Delete:', error);
+    console.error('Delete Error:', error);
+    toast.success('Delete Error:', error);
   }
 };
 
