@@ -81,7 +81,7 @@
             </v-col>
           </v-row>
 
-          <v-row v-if="transactionType === 'D'">
+          <v-row v-if="transactionType === 'D' && user.user_type === 'A' ">
             <v-col>
               <v-text-field
                 v-model="vcardDebit"
@@ -140,6 +140,50 @@
     </v-card>
   </v-dialog>
 
+  <v-dialog v-if="user.user_type === 'V'"  v-model="editDialog" max-width="500px">
+    <v-card>
+      <v-card-title class="bg-green" >
+      Edit transaction
+    </v-card-title>
+    <v-card>
+      <v-form>
+          <v-row v-if="user.user_type === 'V'">
+            <v-col>
+              <v-select
+                v-if="categories.length > 0"
+                v-model="editedItem.category_id"
+                :items="categories"
+                label="Categoria da transacçao"
+                :reduce="option => option.value"
+                required
+              ></v-select>
+            </v-col>
+          </v-row>
+
+          <v-row v-if="user.user_type === 'V'">
+            <v-col>
+              <v-text-field
+                v-model="editedItem.description"
+                label="Descrição"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+
+        </v-form>
+      </v-card>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn color="red" text @click="closeEditDialog">
+          Fechar
+        </v-btn>
+        <v-btn  type="submit" color="green" text @click="submitEditForm">
+          editar
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
   <v-card flat>
     <v-card-title class="d-flex align-center pe-2">
       <v-icon icon="mdi-video-input-component"></v-icon> &nbsp;
@@ -167,22 +211,17 @@
     :headers="customHeaders"
     :loading="loading"
     :items-length="totalItems"
-    @update:options="loadItems">
-      <template v-slot:header.stock>
-        <div class="text-end">Stock</div>
-      </template>
-      <template v-slot:header="{ header }">
-      <thead>
-        <tr>
-          <th
-            v-for="col in header"
-            :key="col.value"
-            :class="{ 'text-left': col.value === 'id' }"
-          >
-            {{ col.text }}
-          </th>
-        </tr>
-      </thead>
+
+    @update:options="loadItems"
+    >
+    <template v-slot:item.actions="{ item }">
+      <v-icon
+        size="small"
+        class="me-2"
+        @click="editItem(item)"
+      >
+        mdi-pencil
+      </v-icon>
     </template>
     </v-data-table>
   </v-card>
@@ -213,28 +252,22 @@ import axios from 'axios';
         transactionType: "",
         paymentMethod: "",
         transactionTypes: [],
+        tabelaKey: 0,
         categories: [],
         paymentReference: "",
         transactionCategory: "",
         transactionDescription: "",
         user: JSON.parse(localStorage.getItem('user')),
         dialog: false,
+        editDialog: false,
         search: '',
+        editedItem:{},
         items:[],
         loading: true,
         currentPage: 1,
         itemsPerPage: 10,
         totalItems: 0,
-        customHeaders:[
-        { title: 'Vcard Number', key: 'vcard', align: 'end' },
-        { title: 'Date & time', key: 'datetime', align: 'end' },
-        { title: 'Type', key: 'type', align: 'end' },
-        { title: 'Value', key: 'value', align: 'end' },
-        { title: 'Old balance (%)', key: 'old_balance', align: 'end' },
-        { title: 'New Balance', key: 'new_balance', align: 'end' },
-        { title: 'Payment Type', key: 'payment_type', align: 'end' },
-        { title: 'Payment Reference', key: 'payment_reference', align: 'end' },
-      ],
+        customHeaders:[],
         breadCrumb: [
         {
           title: 'Dashboard',
@@ -263,6 +296,35 @@ import axios from 'axios';
         ] :  [ 
           { value: 'D', title: 'Débito' },
         ]
+
+      if(user.user_type === 'V'){
+        this.customHeaders = [
+          { title: 'Vcard Number', key: 'vcard', align: 'end' },
+          { title: 'Date & time', key: 'datetime', align: 'end' },
+          { title: 'Type', key: 'type', align: 'end' },
+          { title: 'Value', key: 'value', align: 'end' },
+          { title: 'Old balance', key: 'old_balance', align: 'end' },
+          { title: 'New Balance', key: 'new_balance', align: 'end' },
+          { title: 'Payment Type', key: 'payment_type', align: 'end' },
+          { title: 'Payment Reference', key: 'payment_reference', align: 'end' },
+          { title: 'Category', key: 'name', align: 'end' },
+          { title: 'Description', key: 'description', align: 'end' },
+          { title: 'Actions', key: 'actions', sortable: false }
+        ]
+      }else{
+        this.customHeaders = [
+          { title: 'Vcard Number', key: 'vcard', align: 'end' },
+          { title: 'Date & time', key: 'datetime', align: 'end' },
+          { title: 'Type', key: 'type', align: 'end' },
+          { title: 'Value', key: 'value', align: 'end' },
+          { title: 'Old balance', key: 'old_balance', align: 'end' },
+          { title: 'New Balance', key: 'new_balance', align: 'end' },
+          { title: 'Payment Type', key: 'payment_type', align: 'end' },
+          { title: 'Payment Reference', key: 'payment_reference', align: 'end' },
+          { title: 'Category', key: 'name', align: 'end' },
+          { title: 'Description', key: 'description', align: 'end' }
+        ]
+      }
 
       let token = localStorage.getItem('token')
       
@@ -302,17 +364,42 @@ import axios from 'axios';
     closeDialog() {
       this.dialog = false;
     },
+    openEditDialog(){
+      this.editDialog = true
+    },
+    closeEditDialog(){
+      this.editDialog = false
+    },
+    async submitEditForm(){
+          let token = localStorage.getItem('token')
+          let vcardCredit = this.vcardCredit
+          let transactionType = this.transactionType
+          let reference = this.vcardDebit
+          let value = this.transactionValue
+          let paymentMethod = this.paymentMethod
+                let body = {
+                  transactionId: this.editedItem.id,
+                  categoryId: this.editedItem.category_id,
+                  description: this.editedItem.description,
+                }
+          let response = axios.patch(`/update-transaction` , body,{   
+                    headers: {
+                    Authorization: `Bearer ${token}`,
+                },}).then(res => {
+                  if(res.status === 403){
+                    this.toast.error(res.data.message);
+                  }
+                  this.toast.success("Transaction edited with success");
+                  this.loadItems()
+                  this.editDialog = false;
+              },
+              err => {
+                if(err?.response.status === 403){
+                    this.toast.error(err?.response.data.message);
+                  }
+              })
+    },
     async submitForm() {
-      // Aqui você pode lidar com os dados do formulário, por exemplo, enviá-los para um servidor
-      console.log("Dados do formulário:", {
-        transactionValue: this.transactionValue,
-        transactionType: this.transactionType,
-        paymentMethod: this.paymentMethod,
-        recipient: this.paymentReference,
-        transactionCategory: this.transactionCategory,
-        transactionDescription: this.transactionDescription,
-      });
-
       if(this.transactionType === 'C'){
         if(this.paymentMethod === 'VCARD'){
           let token = localStorage.getItem('token')
@@ -341,7 +428,7 @@ import axios from 'axios';
                     value: value
                   });
                   this.toast.success("Transaction made with success");
-
+                  this.loadItems()
                   this.resetForm();
               },
               err => {
@@ -379,6 +466,7 @@ import axios from 'axios';
                     value: value
                   });
                   this.toast.success("Transaction made with success");
+                  this.loadItems()
                   this.resetForm();
                 })
               }
@@ -387,15 +475,15 @@ import axios from 'axios';
       }else {
         if(this.paymentMethod === 'VCARD'){
           let token = localStorage.getItem('token')
-          let vcardDebit = this.vcardDebit
+          let vcardDebit = this.user.user_type === 'V' ? this.user.username : this.vcardDebit
           let transactionType = this.transactionType
-          let reference = this.vcardDebit
+          let reference = this.vcardCredit
           let value = this.transactionValue
           let paymentMethod = this.paymentMethod
           let transactionCategory = this.transactionCategory
           let transactionDescription = this.transactionDescription
                 let body = {
-                  vcard: vcardDebit,
+                  vcard:vcardDebit ,
                   type: transactionType,
                   value: value,
                   paymentType: paymentMethod,
@@ -412,15 +500,15 @@ import axios from 'axios';
                   }
                   this.socket.emit('SendTransactionNotification', {
                     from: reference ,
-                    to: vcardCredit,
+                    to: this.vcardCredit,
                     value: value
                   });
                   this.toast.success("Transaction made with success");
-
+                  this.loadItems()
                   this.resetForm();
               })
         }else{
-          let vcardDebit = this.vcardDebit
+          let vcardDebit = this.user.user_type === 'V' ? this.user.username : this.vcardDebit
           let transactionType = this.transactionType
           let reference = this.paymentReference
           let value = this.transactionValue
@@ -450,7 +538,9 @@ import axios from 'axios';
                   this.socket.emit('UpdateBalanceEvent', {
                     to: vcardDebit,
                   });
+                  
                   this.toast.success("Transaction made with success");
+                  this.loadItems()
                   this.resetForm();
                 })
               }
@@ -473,11 +563,10 @@ import axios from 'axios';
       this.transactionCategory = "";
       this.transactionDescription = "";
     },
-    async loadItems ({ page, itemsPerPage, sortBy }) {
+    async loadItems () {
 
         this.loading = true
-        this.currentPage = page
-        this.itemsPerPage = itemsPerPage
+ 
         let token = localStorage.getItem('token')
         let items = this.user.user_type === "A" ? await axios.get(`/admin-transactions`,{   
          headers: {
@@ -490,6 +579,8 @@ import axios from 'axios';
         this.items = items.data.transactions
         this.totalItems = items.data.total
         this.loading = false
+        this.tabelaKey = this.tabelaKey + 1
+        
       },
       validarIBAN(valor) {
       const regexIBAN = /^[A-Z]{2}\d{23}$/;
@@ -532,6 +623,11 @@ import axios from 'axios';
         default: []
       } 
     },
+    editItem (item) {
+        this.editedIndex = this.items.indexOf(item)
+        this.editedItem = Object.assign({}, item)
+        this.editDialog = true
+      },
   }
 
   }
@@ -549,6 +645,10 @@ import axios from 'axios';
   button{
     max-width: 250px;
   }
+}
+
+.custom-pagination .v-pagination__item i {
+  color: black !important;
 }
 
 .newTransaction{

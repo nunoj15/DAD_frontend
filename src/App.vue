@@ -36,7 +36,7 @@
       </div>
     </div>
   </v-layout>
-  <div v-if="!isAuthenticated" class="router-view">
+  <div v-if="!isAuthenticated" class="router-view-login">
 
     <RouterView />
   </div>
@@ -147,6 +147,12 @@ isAuthenticated.value = !!authToken;
 }
 .router-view{
   margin-left: 256px;
+  width: calc(100hv-256px);
+  align-items: center;
+
+}
+
+.router-view-login{
   width: calc(100hv-256px);
   align-items: center;
 

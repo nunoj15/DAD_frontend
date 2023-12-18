@@ -13,14 +13,17 @@ import store from './socketClient';
 import io from 'socket.io-client';
 import paymentGatewayStore from './stores/paymentGateway';
 //axios.defaults.withCredentials = true;
+const apiDomain = import.meta.env.VITE_API_DOMAIN
+const wsConnection = import.meta.env.VITE_WS_CONNECTION
+const serverBaseUrl = 'http://localhost:8000'
 
 const app = createApp(App)
 
-const serverBaseUrl = 'http://localhost:8000'
-const paymentGateway = 'https://dad-202324-payments-api.vercel.app/'
+app.provide('serverBaseUrl',`${apiDomain}/api`)
+
 app.provide('serverBaseUrl', serverBaseUrl)
 // Default Axios configuration
-axios.defaults.baseURL = serverBaseUrl + '/api'
+axios.defaults.baseURL = apiDomain + '/api'
 //axios.defaults.headers.common['Content-type'] = 'application/json'
 
 app.use(Toaster, {
@@ -40,7 +43,7 @@ app.use(vuetify)  // Use o Vuetify no app
 
 const userEmail = JSON.parse(localStorage.getItem('user'));
 
-let socket = io("http://localhost:3000")
+let socket = io(wsConnection)
 app.provide('socket', socket)
 
 if(userEmail){

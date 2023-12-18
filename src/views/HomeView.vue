@@ -1,8 +1,6 @@
 <template>
     <div>
         <h1>Welcome {{ usuario }}</h1>
-        <p>Current Balance: {{ currentBalance }} €</p>
-
         <div v-if="usuarioType === 'A'">
             <p>Hello, Admin!</p>
             <label>

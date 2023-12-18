@@ -7,6 +7,7 @@
   display: flex;
   font-weight: normal;
   height: 100vh;
+  justify-content: center;
 }
 
 a,
