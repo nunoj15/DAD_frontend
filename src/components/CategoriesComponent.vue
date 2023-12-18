@@ -8,7 +8,11 @@
                 <input id="editedCategoryName" v-model="editedCategory.name">
 
                 <label for="editedCategoryType">Type:</label>
-                <input id="editedCategoryType" v-model="editedCategory.type">
+
+                <select v-model="editedCategory.type" id="editedCategoryType" class="custom-input">
+                    <option value="D">Debit</option>
+                    <option value="C">Credit</option>
+                </select>
 
                 <button @click="saveEditedCategory">Save</button>
                 <button @click="closeEditModal">Cancel</button>
@@ -49,7 +53,6 @@
 </template>
   
 <style>
-
 .modal {
     display: none;
     position: fixed;
@@ -57,7 +60,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.7);
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 .modal-content {
@@ -137,8 +140,10 @@ button {
 
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, inject } from 'vue';
 import axios from 'axios';
+const toast = inject('toast');
+
 
 const user = ref({});
 const newCategoryName = ref('');
@@ -173,8 +178,13 @@ const addCategory = async () => {
 
         newCategoryName.value = '';
         newCategoryType.value = '';
+        toast.success("Category successfully addedd");
+
+
         fetchCategories();
     } catch (error) {
+        toast.error("An error has occured adding the category");
+
         console.error('Failed to add category:', error);
     }
 };
@@ -219,15 +229,15 @@ const softDeleteCategory = async (categoryId) => {
         });
 
         if (response.data.message) {
-            alert(response.data.message);
+            toast.success("Category successfully deleted");
         }
 
         fetchCategories();
     } catch (error) {
         if (error.response && error.response.status === 403) {
-            alert("Sorry, can't delete default categories.");
+            toast.error("Can't delete default categories");
         } else {
-            console.error('Failed to delete category:', error);
+            toast.error("An error has occured");
         }
     }
 };
@@ -256,10 +266,16 @@ const saveEditedCategory = async () => {
 
         const index = categories.value.findIndex(category => category.id === updatedCategory.id);
         categories.value[index] = updatedCategory;
+        toast.success("Category successfully updated");
 
         closeEditModal();
     } catch (error) {
-        console.error('Failed to update category:', error);
+        if (error.response && error.response.status === 403) {
+            toast.error("Can't edit default categories");
+        } else {
+            toast.error("An error has occured");
+            console.error('Failed to delete category:', error);
+        }
     }
 };
 
