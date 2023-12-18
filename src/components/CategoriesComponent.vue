@@ -78,7 +78,6 @@
     cursor: pointer;
 }
 
-/* Additional styling for the button */
 button {
     padding: 8px 16px;
     margin-top: 10px;
@@ -238,14 +237,12 @@ const openEditModal = (category) => {
     editedCategory.value.name = category.name;
     editedCategory.value.type = category.type;
 
-    // Show the modal
     const modal = document.getElementById('editModal');
     modal.style.display = 'block';
 };
 
 const saveEditedCategory = async () => {
     try {
-        // Make an API request to update the category
         const response = await axios.put(`/update-category/${editedCategory.value.id}`, {
             name: editedCategory.value.name,
             type: editedCategory.value.type,
@@ -255,14 +252,11 @@ const saveEditedCategory = async () => {
             },
         });
 
-        // Assuming your API response includes the updated category, you can update your data
         const updatedCategory = response.data.category;
 
-        // Update the data used to render the table
         const index = categories.value.findIndex(category => category.id === updatedCategory.id);
         categories.value[index] = updatedCategory;
 
-        // Close the edit modal
         closeEditModal();
     } catch (error) {
         console.error('Failed to update category:', error);
@@ -270,14 +264,12 @@ const saveEditedCategory = async () => {
 };
 
 const closeEditModal = () => {
-    // Reset the editedCategory data
     editedCategory.value = {
         id: null,
         name: '',
         type: '',
     };
 
-    // Hide the modal
     const modal = document.getElementById('editModal');
     modal.style.display = 'none';
 };
