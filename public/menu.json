@@ -6,29 +6,20 @@
         "link": "/"
       },
       {
-        "id": 3,
+        "id": 2,
         "title": "VCards",
-        "link": "/vcards",
-        "children": [
-          {
-            "id": 4,
-            "title": "Todos os Cartões",
-            "link": "/vcards"
-          },
-          {
-            "id": 5,
-            "title": "Categoria 2",
-            "link": "/produtos/categoria2"
-          }
-        ]
+        "link": "/vcards"
       },
       {
         "id": 3,
         "title": "Transactions",
         "link": "/transactions"
+      },
+      {
+        "id": 4,
+        "title": "Users",
+        "link": "/users"
       }
-     
-    
     ]
   }
   

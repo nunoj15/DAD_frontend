@@ -9,21 +9,25 @@
 
       </v-breadcrumbs>
     </div>
+    <v-form
+        class="row g-3 needs-validation"
+        novalidate
+        @submit.prevent="changePassword">
     <v-row>
       <v-col cols="12">
-        <v-text-field :type="visible ? 'text' : 'password'" v-model="profile.oldPassword" label="Old Password" ></v-text-field>
+        <v-text-field :type="visible ? 'text' : 'password'" v-model="passwords.current_password" label="Old Password" ></v-text-field>
       </v-col>
     </v-row>
 
     <v-row>
       <v-col cols="12">
-        <v-text-field :type="visible ? 'text' : 'password'" v-model="profile.newPassword" label="New Password" ></v-text-field>
+        <v-text-field :type="visible ? 'text' : 'password'" v-model="passwords.password" label="New Password" ></v-text-field>
       </v-col>
     </v-row>
 
     <v-row>
       <v-col cols="12">
-        <v-text-field :type="visible ? 'text' : 'password'" v-model="profile.newPasswordConfirmation" label="Confirm the Password" ></v-text-field>
+        <v-text-field :type="visible ? 'text' : 'password'" v-model="passwords.password_confirmation" label="Confirm the Password" ></v-text-field>
       </v-col>
     </v-row>
 
@@ -32,13 +36,16 @@
         <v-btn @click="changePassword" color="green">Change</v-btn>
       </v-col>
     </v-row>
-
-
+  </v-form>
   </v-container>
 </template>
 
 <script>
 import axios from 'axios';
+import { useToast } from "vue-toastification"
+import { useRouter } from 'vue-router'
+import { useUserStore } from '../../stores/user.js'
+import { ref, defineEmits } from 'vue'
 export default {
   data() {
     return {
@@ -79,14 +86,41 @@ export default {
          headers: {
         Authorization: `Bearer ${token}`,
     },});
+  }catch(error){
 
-        console.log(response.data.message);
-      } catch (error) {
-        console.error(error.response.data.message);
-      }
-    },
-  },
-};
+  }
+},
+}
+}
+
+const toast = useToast()
+const router = useRouter()
+
+const passwords = ref({
+  current_password: '',
+  password: '',
+  password_confirmation: ''
+})
+
+const errors = ref(null)
+
+const emit = defineEmits(['changedPassword'])
+
+const changePassword = async () => {
+  try {
+    await userStore.changePassword(passwords.value)
+    toast.success('Password has been changed.')
+    emit('changedPassword')
+    router.back()
+  } catch (error) {
+    if (error.response.status == 422) {
+      errors.value = error.response.data.errors
+      toast.error('Password has not been changed due to validation errors!')
+    } else {
+      toast.error('Password has not been changed due to unknown server error!')
+    }
+  }
+}
 </script>
 
 <style lang="scss" scoped>

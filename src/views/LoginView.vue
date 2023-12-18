@@ -59,19 +59,13 @@
 
       <v-card-text class="text-center">
         <router-link to="/register" class="text-green text-decoration-none">
-        <a
-          class="text-green text-decoration-none"
-          href="#"
-          rel="noopener noreferrer"
-          target="_blank"
-        >
           Sign up now <v-icon icon="mdi-chevron-right"></v-icon>
-        </a>
-      </router-link>
+        </router-link>
       </v-card-text>
-      </v-card>
-    </v-form>
-  </div>
+
+    </v-card>
+  </v-form>
+</div>
 </template>
 
 <script setup>

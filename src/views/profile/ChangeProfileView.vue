@@ -1,54 +1,58 @@
 <template>
   <v-container>
-    <v-form>
-      <div class="breadCrumb">
-        <v-breadcrumbs
-            class=""
-            :items="breadCrumb"
-            divider="-"
-        >
-
-        </v-breadcrumbs>
-      </div>
-      <v-row>
-        <v-col cols="12">
-          <v-text-field v-model="profile.name" label="Nome"></v-text-field>
-        </v-col>
-      </v-row>
-
-      <v-row>
-        <v-col cols="12">
-          <v-text-field v-model="profile.email" label="E-mail"></v-text-field>
-        </v-col>
-      </v-row>
-
-      <v-row>
-        <v-col cols="12">
-          <v-file-input
-              :rules="rules"
-              accept="image/png, image/jpeg, image/bmp"
-              placeholder="Pick a photo"
-              prepend-icon="mdi-camera"
-              label="Avatar"
-          ></v-file-input>
-        </v-col>
-      </v-row>
-
-      <v-row>
-        <v-col cols="12">
-          <v-text-field v-model="profile.confirmationCode" label="Confirmation Code"></v-text-field>
-        </v-col>
-      </v-row>
-
-      <v-row>
-        <v-col cols="12">
-          <v-btn @click="saveProfile" color="green">Salvar</v-btn>
-        </v-col>
-      </v-row>
-
-    </v-form>
+    <v-row justify="center">
+      <v-col cols="12" md="8">
+        <v-form @submit.prevent="changePassword" ref="form" v-model="valid">
+          <v-card class="mt-5">
+            <v-card-title>
+              <h3 class="mb-0">Change Password</h3>
+            </v-card-title>
+            <v-divider></v-divider>
+            <v-card-text>
+              <v-row>
+                <v-col cols="12">
+                  <v-text-field
+                      v-model="passwords.current_password"
+                      label="Current Password"
+                      type="password"
+                      required
+                  ></v-text-field>
+                  <field-error-message :errors="errors" fieldName="current_password"></field-error-message>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="12">
+                  <v-text-field
+                      v-model="passwords.password"
+                      label="New Password"
+                      type="password"
+                      required
+                  ></v-text-field>
+                  <field-error-message :errors="errors" fieldName="password"></field-error-message>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="12">
+                  <v-text-field
+                      v-model="passwords.password_confirmation"
+                      label="Password Confirmation"
+                      type="password"
+                      required
+                  ></v-text-field>
+                  <field-error-message :errors="errors" fieldName="password_confirmation"></field-error-message>
+                </v-col>
+              </v-row>
+            </v-card-text>
+            <v-card-actions class="d-flex justify-center">
+              <v-btn type="submit" :disabled="!valid" color="primary" class="px-5">Change Password</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-form>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
+
 
 <script>
 export default {
