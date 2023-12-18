@@ -11,15 +11,17 @@ import axios from 'axios'
 import { createPinia } from 'pinia'
 import store from './socketClient';
 import io from 'socket.io-client';
+import paymentGatewayStore from './stores/paymentGateway';
 //axios.defaults.withCredentials = true;
 
 const app = createApp(App)
 
 const serverBaseUrl = 'http://localhost:8000'
+const paymentGateway = 'https://dad-202324-payments-api.vercel.app/'
 app.provide('serverBaseUrl', serverBaseUrl)
 // Default Axios configuration
 axios.defaults.baseURL = serverBaseUrl + '/api'
-axios.defaults.headers.common['Content-type'] = 'application/json'
+//axios.defaults.headers.common['Content-type'] = 'application/json'
 
 app.use(Toaster, {
     // Global/Default options
@@ -27,20 +29,23 @@ app.use(Toaster, {
     timeout: 3000,
     pauseOnHover: true
 })
+app.use(paymentGatewayStore);
 app.provide('toast', app.config.globalProperties.$toast)
 app.use(createPinia())
+
 
 app.use(router)
 
 app.use(vuetify)  // Use o Vuetify no app
 
-const userEmail = localStorage.getItem('user');
+const userEmail = JSON.parse(localStorage.getItem('user'));
+
 let socket = io("http://localhost:3000")
 app.provide('socket', socket)
 
 if(userEmail){
     socket.emit('WebClientConnectInit', {
-        identifier: userEmail,
+        identifier: userEmail.username,
       });
 }
 

@@ -11,9 +11,13 @@
         <router-link to="/profile">
           <v-list-item
             prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg"
-            :title="user.name"
-            :subtitle="user.email"
-          ></v-list-item>
+            :title="user?.name"
+            :subtitle="user?.email"
+          >
+            <div v-if="user?.user_type === 'V'">
+              <p class="text-sm mt-1">Vcard balance : {{ currentBalance }}</p>
+            </div>
+        </v-list-item>
         </router-link>
         </v-list>
 
@@ -68,7 +72,7 @@ let token = ref('');
 let user = ref(null)
 const userStore = useUserStore()
 const router = useRouter();
-
+const currentBalance = ref(null);
 
 const logout = async () => {
   try {
@@ -91,7 +95,7 @@ const logout = async () => {
 
 
 
-onMounted(() => {
+onMounted(async () => {
   fetch('/menu.json')
       .then(response => response.json())
       .then(data => {
@@ -101,6 +105,26 @@ onMounted(() => {
     console.log(token.value)
 
     user = JSON.parse(localStorage.getItem('user'))
+
+    if(user?.user_type === 'V'){
+      const balanceResponse = await axios.get('/get-balance', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+      currentBalance.value = balanceResponse.data.currentBalance;
+    }
+
+    socket.on('UpdateAccountBalance', async (data) => {
+      if(user.user_type === 'V'){
+      const balanceResponse = await axios.get('/get-balance', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
+      currentBalance.value = balanceResponse.data.currentBalance;
+    }
+  });
 });
 
 methods:{
@@ -119,6 +143,10 @@ isAuthenticated.value = !!authToken;
 
 
 <style scoped>
+
+.text-sm{
+  font-size: 14px;
+}
 .router-view{
   margin-left: 256px;
   width: calc(100hv-256px);
@@ -184,6 +212,8 @@ nav a:first-of-type {
 
     padding: 1rem 0;
     margin-top: 1rem;
+    width: 280px !important;
   }
+
 }
 </style>

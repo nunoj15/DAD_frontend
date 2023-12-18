@@ -38,6 +38,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 export default {
   data() {
     return {
@@ -68,11 +69,16 @@ export default {
   methods: {
     async changePassword() {
       try {
+        let token = localStorage.getItem('token')
+
         const response = await axios.patch(`users/1/password`, {
           old_password: this.oldPassword,
           new_password: this.newPassword,
           confirm_password: this.confirmPassword,
-        });
+        },{   
+         headers: {
+        Authorization: `Bearer ${token}`,
+    },});
 
         console.log(response.data.message);
       } catch (error) {

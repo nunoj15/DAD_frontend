@@ -1,10 +1,5 @@
 <template>
   <div class="breadCrumb">
-    <v-breadcrumbs
-      class=""
-      :items="breadCrumb"
-      divider="-"
-    ></v-breadcrumbs>
     <div>
       <v-btn
           block
@@ -20,7 +15,7 @@
     </div>
   </div>
 
-  <v-dialog v-model="dialog" max-width="500px">
+  <v-dialog  v-model="dialog" max-width="500px">
     <v-card>
       <v-card-title class="bg-green" >
       New transaction
@@ -41,9 +36,11 @@
           <v-row>
             <v-col>
               <v-select
+                v-if="transactionTypes.length > 0"
                 v-model="transactionType"
                 :items="transactionTypes"
                 label="Tipo de Transação"
+                :reduce="option => option.value"
                 required
               ></v-select>
             </v-col>
@@ -51,24 +48,75 @@
 
           <v-row>
             <v-col>
+              <v-select
+                v-if="paymentMethods.length > 0"
+                v-model="paymentMethod"
+                :items="paymentMethods"
+                label="Método de pagamento"
+                :reduce="option => option.value"
+                required
+              ></v-select>
+            </v-col>
+          </v-row>
+
+          <v-row v-if="paymentMethod === 'VCARD' && transactionType === 'C'">
+            <v-col>
               <v-text-field
-                v-model="recipient"
-                label="Referência de Pagamento"
+                v-model="vcardDebit"
+                label="Vcard de débito"
+                required
+                :rules=[validarVCARD]
+              ></v-text-field>
+            </v-col>
+          </v-row>
+
+          <v-row v-if="transactionType === 'C' || (transactionType === 'D' && paymentMethod === 'VCARD')">
+            <v-col>
+              <v-text-field
+                v-model="vcardCredit"
+                label="Vcard de crédito"
+                required
+                :rules=[validarVCARD]
+              ></v-text-field>
+            </v-col>
+          </v-row>
+
+          <v-row v-if="transactionType === 'D'">
+            <v-col>
+              <v-text-field
+                v-model="vcardDebit"
+                label="Vcard de debito"
+                required
+                :rules=[validarVCARD]
+              ></v-text-field>
+            </v-col>
+          </v-row>
+
+          <v-row v-if="paymentMethod !== 'VCARD'">
+            <v-col>
+              <v-text-field
+                v-model="paymentReference"
+                :label= "transactionType === 'C' ? 'Referência de Pagamento' : 'Referência a pagar' "
+                :rules=[obterRegrasDeValidacao]
                 required
               ></v-text-field>
             </v-col>
           </v-row>
 
-          <v-row>
+          <v-row v-if="user.user_type === 'V'">
             <v-col>
-              <v-text-field
+              <v-select
+                v-if="categories.length > 0"
                 v-model="transactionCategory"
-                label="Categoria da Transação"
-              ></v-text-field>
+                :items="categories"
+                label="Categoria da transacçao"
+                :reduce="option => option.value"
+                required
+              ></v-select>
             </v-col>
           </v-row>
 
-          <v-row>
+          <v-row v-if="user.user_type === 'V'">
             <v-col>
               <v-text-field
                 v-model="transactionDescription"
@@ -113,13 +161,11 @@
 
     <v-divider></v-divider>
     <v-data-table 
+    v-model:items-per-page="itemsPerPage"
     v-model:search="search"
     :items="items"
     :headers="customHeaders"
     :loading="loading"
-    :items-per-page="itemsPerPage"
-    :page.sync="currentPage"
-    :total-items="totalItems"
     :items-length="totalItems"
     @update:options="loadItems">
       <template v-slot:header.stock>
@@ -145,15 +191,30 @@
 <script>
 import io from 'socket.io-client';
 import store from '../socketClient';
-import {inject} from 'vue'
+import {inject, provide} from 'vue'
 import axios from 'axios';
+
+
   export default {
-    inject:["socket"],
+    inject:["socket", "toast"],
     data () {
       return {
+        vcardDebit: '',
+        vcardCredit:'',
+        paymentMethods:[
+          {value: "VCARD", title: 'Vcard'},
+          {value: "MBWAY", title: 'MBWay'},
+          {value: "PAYPAL", title: 'PayPal'},
+          {value: 'MB', title: 'MB'},
+          {value: 'IBAN', title: 'IBAN'},
+          {value: 'VISA', title: 'Visa'}
+        ],
         transactionValue: "",
-        transactionType: "debito",
-        recipient: "",
+        transactionType: "",
+        paymentMethod: "",
+        transactionTypes: [],
+        categories: [],
+        paymentReference: "",
         transactionCategory: "",
         transactionDescription: "",
         user: JSON.parse(localStorage.getItem('user')),
@@ -196,14 +257,42 @@ import axios from 'axios';
     async mounted () {
       let user = JSON.parse(localStorage.getItem('user'))
 
+      this.transactionTypes =  user.user_type === "A" ? [
+          { value: 'C', title: 'Crédito' },
+          { value: 'D', title: 'Débito' },
+        ] :  [ 
+          { value: 'D', title: 'Débito' },
+        ]
+
       let token = localStorage.getItem('token')
-      if (axios && axios.defaults) {
-        axios.defaults.headers.common.Authorization = 'Bearer ' + token;
-      }
-      let items = user.user_type === "A" ? await axios.get(`/admin-transactions/${this.currentPage}/${this.itemsPerPage}`) :
-      await axios.get(`/owners-transactions?page=${this.currentPage}&itemsPerPage=${this.itemsPerPage}&vcardNumber=${this.user.username}`);
+      
+      let items = user.user_type === "A" ? await axios.get(`/admin-transactions`,{   
+         headers: {
+        Authorization: `Bearer ${token}`,
+    },}) :
+      await axios.get(`/owners-transactions?vcardNumber=${this.user.username}` ,{   
+         headers: {
+        Authorization: `Bearer ${token}`,
+    },});
       this.items = items.data.transactions
       this.totalItems = items.data.total
+      this.loading = false
+
+      if(user.user_type === 'V'){
+        let response = await axios.get(`/get-all-categories?vcardNumber=${this.user.username}` ,{   
+            headers: {
+            Authorization: `Bearer ${token}`,
+         },});
+
+         let categories = response.data.categories.map(apiCategory => {
+            return {
+                value: apiCategory.id,
+                title: apiCategory.name,
+                // Adicione mais mapeamentos conforme necessário
+            };
+        });
+         this.categories = categories
+      }
 
     },
     methods: {
@@ -213,38 +302,174 @@ import axios from 'axios';
     closeDialog() {
       this.dialog = false;
     },
-    submitForm() {
+    async submitForm() {
       // Aqui você pode lidar com os dados do formulário, por exemplo, enviá-los para um servidor
       console.log("Dados do formulário:", {
         transactionValue: this.transactionValue,
         transactionType: this.transactionType,
-        recipient: this.recipient,
+        paymentMethod: this.paymentMethod,
+        recipient: this.paymentReference,
         transactionCategory: this.transactionCategory,
         transactionDescription: this.transactionDescription,
       });
 
-    let user = JSON.parse(localStorage.getItem('user'))
+      if(this.transactionType === 'C'){
+        if(this.paymentMethod === 'VCARD'){
+          let token = localStorage.getItem('token')
+          let vcardCredit = this.vcardCredit
+          let transactionType = this.transactionType
+          let reference = this.vcardDebit
+          let value = this.transactionValue
+          let paymentMethod = this.paymentMethod
+                let body = {
+                  vcard: vcardCredit,
+                  type: transactionType,
+                  value: value,
+                  paymentType: paymentMethod,
+                  paymentReference: reference
+                }
+          let response = axios.post(`/create-transaction` , body,{   
+                    headers: {
+                    Authorization: `Bearer ${token}`,
+                },}).then(res => {
+                  if(res.status === 403){
+                    this.toast.error(res.data.message);
+                  }
+                  this.socket.emit('SendTransactionNotification', {
+                    from: reference ,
+                    to: vcardCredit,
+                    value: value
+                  });
+                  this.toast.success("Transaction made with success");
 
-    
+                  this.resetForm();
+              },
+              err => {
+                if(err?.response.status === 403){
+                    this.toast.error(err?.response.data.message);
+                  }
+              })
+        }else{
+          let vcardCredit = this.vcardCredit
+          let transactionType = this.transactionType
+          let reference = this.paymentReference
+          let value = this.transactionValue
+          let paymentMethod = this.paymentMethod
+          let response = this.$store.dispatch('debitTransaction', {paymentMethod,reference,value})
+            .then( response => {
+                if(response.status === 201){
+                let token = localStorage.getItem('token')
+                let body = {
+                  vcard: vcardCredit,
+                  type: transactionType,
+                  value: value,
+                  paymentType: paymentMethod,
+                  paymentReference: reference
+                }
+                let response = axios.post(`/create-transaction` , body,{   
+                    headers: {
+                    Authorization: `Bearer ${token}`,
+                },}).then(res => {
+                  if(res.status === 403){
+                    this.toast.error(res.data.message);
+                  }
+                  this.socket.emit('SendTransactionNotification', {
+                    from: reference ,
+                    to: vcardCredit,
+                    value: value
+                  });
+                  this.toast.success("Transaction made with success");
+                  this.resetForm();
+                })
+              }
+            });
+        }
+      }else {
+        if(this.paymentMethod === 'VCARD'){
+          let token = localStorage.getItem('token')
+          let vcardDebit = this.vcardDebit
+          let transactionType = this.transactionType
+          let reference = this.vcardDebit
+          let value = this.transactionValue
+          let paymentMethod = this.paymentMethod
+          let transactionCategory = this.transactionCategory
+          let transactionDescription = this.transactionDescription
+                let body = {
+                  vcard: vcardDebit,
+                  type: transactionType,
+                  value: value,
+                  paymentType: paymentMethod,
+                  paymentReference: reference,
+                  category: transactionCategory,
+                  description: transactionDescription
+                }
+          let response = axios.post(`/create-transaction` , body,{   
+                    headers: {
+                    Authorization: `Bearer ${token}`,
+                },}).then(res => {
+                  if(res.status === 403){
+                    this.toast.error(res.data.message);
+                  }
+                  this.socket.emit('SendTransactionNotification', {
+                    from: reference ,
+                    to: vcardCredit,
+                    value: value
+                  });
+                  this.toast.success("Transaction made with success");
 
-    this.socket.emit('SendTransactionNotification', {
-      from: user.email,
-      to:this.recipient,
-      value: this.transactionValue
-    });
+                  this.resetForm();
+              })
+        }else{
+          let vcardDebit = this.vcardDebit
+          let transactionType = this.transactionType
+          let reference = this.paymentReference
+          let value = this.transactionValue
+          let paymentMethod = this.paymentMethod
+          let transactionCategory = this.transactionCategory
+          let transactionDescription = this.transactionDescription
+          let response = this.$store.dispatch('creditTransaction', {paymentMethod,reference,value})
+            .then( response => {
+                if(response.status === 201){
+                let token = localStorage.getItem('token')
+                let body = {
+                  vcard: vcardDebit,
+                  type: transactionType,
+                  value: value,
+                  paymentType: paymentMethod,
+                  paymentReference: reference,
+                  category: transactionCategory,
+                  description: transactionDescription
+                }
+                let response = axios.post(`/create-transaction` , body,{   
+                    headers: {
+                    Authorization: `Bearer ${token}`,
+                },}).then(res => {
+                  if(res.status === 403){
+                    this.toast.error(res.data.message);
+                  }
+                  this.socket.emit('UpdateBalanceEvent', {
+                    to: vcardDebit,
+                  });
+                  this.toast.success("Transaction made with success");
+                  this.resetForm();
+                })
+              }
+            });
+        }
+      }
 
     this.socket.on('ReceivedTransactionNotification', (data) => {
       console.log('Mensagem recebida do servidor:', data);
 // Faça algo com a mensagem, como exibir uma notificação
   });
 
-      // Você pode redefinir os campos do formulário após o envio, se necessário
-      this.resetForm();
     },
     resetForm() {
+      this.vcardCredit = ''
       this.transactionValue = "";
-      this.transactionType = "debito";
-      this.recipient = "";
+      this.transactionType = "";
+      this.paymentMethod = '';
+      this.paymentReference = "";
       this.transactionCategory = "";
       this.transactionDescription = "";
     },
@@ -253,12 +478,60 @@ import axios from 'axios';
         this.loading = true
         this.currentPage = page
         this.itemsPerPage = itemsPerPage
-        let items = this.user.user_type === "A" ? await axios.get(`/admin-transactions/${this.currentPage}/${this.itemsPerPage}`) :
-        await axios.get(`/owners-transactions?page=${this.currentPage}&itemsPerPage=${this.itemsPerPage}&vcardNumber=${this.user.username}`);
+        let token = localStorage.getItem('token')
+        let items = this.user.user_type === "A" ? await axios.get(`/admin-transactions`,{   
+         headers: {
+        Authorization: `Bearer ${token}`,
+    },}) :
+        await axios.get(`/owners-transactions?vcardNumber=${this.user.username}`,{   
+         headers: {
+        Authorization: `Bearer ${token}`,
+    },});
         this.items = items.data.transactions
         this.totalItems = items.data.total
         this.loading = false
       },
+      validarIBAN(valor) {
+      const regexIBAN = /^[A-Z]{2}\d{23}$/;
+      return regexIBAN.test(valor) || 'Formato de IBAN inválido';
+    },
+    validarVCARD(valor) {
+      const regexVCARD = /^[9]\d{8}$/;
+      return regexVCARD.test(valor) || 'Formato de VCARD inválido';
+    },
+    validarMBWAY(valor) {
+      const regexMBWAY = /^[9]\d{8}$/;
+      return regexMBWAY.test(valor) || 'Formato de MBWAY inválido';
+    },
+    validarPAYPAL(valor) {
+      const regexPAYPAL = /^\S+@\S+\.\S+$/;
+      return regexPAYPAL.test(valor) || 'Formato de Email inválido';
+    },
+    validarMB(valor) {
+      const regexMB = /^\d{5}-\d{9}$/;
+      return regexMB.test(valor) || 'Formato de Referencia Multibanco inválido';
+    },
+    validarVISA(valor) {
+      const regexVISA = /^4\d{15}$/;
+      return regexVISA.test(valor) || 'Formato de número VISA inválido';
+    },
+    obterRegrasDeValidacao(valor) {
+      switch(this.paymentMethod){
+        case 'IBAN': 
+          return this.validarIBAN(valor)
+        case 'MB': 
+        return this.validarMB(valor)
+        case 'PAYPAL': 
+          return this.validarPAYPAL(valor)
+        case 'MBWAY': 
+          return this.validarMBWAY(valor)
+        case 'VISA': 
+          return this.validarVISA(valor)
+        case 'VCARD': 
+          return this.validarVCARD(valor)
+        default: []
+      } 
+    },
   }
 
   }
