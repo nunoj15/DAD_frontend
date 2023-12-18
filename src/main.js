@@ -15,7 +15,7 @@ import io from 'socket.io-client';
 
 const app = createApp(App)
 
-const serverBaseUrl = 'http://localhost:8000'
+const serverBaseUrl = 'http://localhost:80'
 app.provide('serverBaseUrl', serverBaseUrl)
 // Default Axios configuration
 axios.defaults.baseURL = serverBaseUrl + '/api'

@@ -58,8 +58,8 @@
       </v-btn>
 
       <v-card-text class="text-center">
-        <router-link to="/register" class="text-green text-decoration-none">
-          Sign up now <v-icon icon="mdi-chevron-right"></v-icon>
+        <router-link to="/register">
+          <v-btn color="green">Go to Register Page</v-btn>
         </router-link>
       </v-card-text>
 

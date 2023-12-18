@@ -33,7 +33,7 @@
 
             <v-row>
                 <v-col cols="12">
-                    <v-btn @click="create" color="green">Create</v-btn>
+                    <v-btn @click="create()" color="green">Create</v-btn>
                 </v-col>
             </v-row>
         </v-form>

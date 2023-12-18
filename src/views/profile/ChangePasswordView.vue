@@ -58,13 +58,11 @@ const passwords = ref({
 
 const errors = ref(null)
 
-const emit = defineEmits(['changedPassword'])
 
 const changePassword = async () => {
   try {
     await userStore.changePassword(passwords.value)
     toast.success('Password has been changed.')
-    emit('changedPassword')
     router.back()
   } catch (error) {
     if (error.response.status == 422) {

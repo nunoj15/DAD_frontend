@@ -24,10 +24,8 @@
           </v-btn>
   
           <v-card-text class="text-center">
-            <router-link to="/register" class="text-green text-decoration-none">
-              <a class="text-green text-decoration-none" href="#" rel="noopener noreferrer" target="_blank">
-                Sign up now <v-icon icon="mdi-chevron-right"></v-icon>
-              </a>
+            <router-link to="/register">
+              <v-btn color="green">Sign up now</v-btn>
             </router-link>
           </v-card-text>
         </v-card>

@@ -35,7 +35,13 @@ export const useUserStore = defineStore('user', () => {
                 throw new Error('Anonymous users cannot change the password!');
             }
 
-            const response = await axios.patch(`users/${userStored.id}/password`, credentials);
+            const response = await axios.patch(`vcards/${userStored.id}/password`, {
+                credentials},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    }
+                    });
 
             // Optionally, you can return the response data if needed
             return response.data;

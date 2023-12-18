@@ -1,93 +1,88 @@
 <template>
   <v-container>
-    <v-row justify="center">
-      <v-col cols="12" md="8">
-        <v-form @submit.prevent="changePassword" ref="form" v-model="valid">
-          <v-card class="mt-5">
-            <v-card-title>
-              <h3 class="mb-0">Change Password</h3>
-            </v-card-title>
-            <v-divider></v-divider>
-            <v-card-text>
-              <v-row>
-                <v-col cols="12">
-                  <v-text-field
-                      v-model="passwords.current_password"
-                      label="Current Password"
-                      type="password"
-                      required
-                  ></v-text-field>
-                  <field-error-message :errors="errors" fieldName="current_password"></field-error-message>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col cols="12">
-                  <v-text-field
-                      v-model="passwords.password"
-                      label="New Password"
-                      type="password"
-                      required
-                  ></v-text-field>
-                  <field-error-message :errors="errors" fieldName="password"></field-error-message>
-                </v-col>
-              </v-row>
-              <v-row>
-                <v-col cols="12">
-                  <v-text-field
-                      v-model="passwords.password_confirmation"
-                      label="Password Confirmation"
-                      type="password"
-                      required
-                  ></v-text-field>
-                  <field-error-message :errors="errors" fieldName="password_confirmation"></field-error-message>
-                </v-col>
-              </v-row>
-            </v-card-text>
-            <v-card-actions class="d-flex justify-center">
-              <v-btn type="submit" :disabled="!valid" color="primary" class="px-5">Change Password</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-form>
-      </v-col>
-    </v-row>
+    <v-form
+        class="row g-3 needs-validation"
+        novalidate
+        @submit.prevent="change">
+      <v-row>
+        <v-col cols="12">
+          <v-text-field v-model="profile.name" label="Name" ></v-text-field>
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-col cols="12">
+          <v-text-field v-model="profile.email" label="Email" ></v-text-field>
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-col cols="12">
+          <v-text-field v-model="profile.phone_number" label="Phone number" ></v-text-field>
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-col cols="12">
+          <v-text-field v-model="profile.confirmationCode" label="Confirmation code" ></v-text-field>
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-col cols="12">
+          <v-btn @click="change" color="green">Change</v-btn>
+        </v-col>
+      </v-row>
+    </v-form>
   </v-container>
 </template>
 
+<script setup>
+import { useToast } from "vue-toastification"
+import { useRouter } from 'vue-router'
+import { ref, inject } from 'vue'
+import axios from 'axios';
+const toast = inject('toast')
 
-<script>
-export default {
-  data() {
-    return {
-      profile: {
-        name: '',
-        email: '',
-        photo: '',
-        confirmationCode: ''
-      },
-      breadCrumb: [
-        {
-          title: 'Account Details',
-          disabled: false,
-          href: 'profile',
+const router = useRouter()
+
+const profile = ref({
+  name: '',
+  email: '',
+  confirmationCode: '',
+  phone_number: '',
+})
+
+const errors = ref(null)
+let user = JSON.parse(localStorage.getItem('user'))
+
+const change = async () => {
+  try {
+      const authToken = localStorage.getItem('token');
+      if (!authToken) {
+        console.error('Authentication token not found.');
+        return;
+      }
+      console.log(profile)
+      // Use vcard as a parameter to get the ID or any other necessary data
+      const response = await axios.put(`/vcards/${user.username}`, {
+        name: profile.value.name,
+        email: profile.value.email,
+        phone_number: profile.value.phone_number,
+        confirmation_code: profile.value.confirmationCode,
+      }, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
         },
-        {
-          title: 'Change Password',
-          disabled: false,
-          href: 'changePassword',
-        },
-        {
-          title: 'Change Profile Details',
-          disabled: true,
-          href: 'changeDetails',
-        },
-      ],
-    };
-  },
-  methods: {
-    saveProfile() {
-      console.log('Perfil salvo:', this.profile);
-    },
-  },
+      });
+
+      console.log('Vcard Updated:', response.data);
+      toast.success('Vcard Updated successfully!!!')
+
+  } catch (error) {
+    toast.error('Error updating Vcard.')
+    console.error('Error updating Vcard:', error);
+  }
 };
 </script>
 
