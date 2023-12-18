@@ -10,15 +10,39 @@
 
         </v-breadcrumbs>
       </div>
+      <v-banner-text>
+        Name:
+      </v-banner-text>
       <v-row>
         <v-col cols="12">
           <v-text-field v-model="profile.name" disabled readonly>{{user.name}}</v-text-field>
         </v-col>
       </v-row>
 
+      <v-banner-text>
+        Email:
+      </v-banner-text>
       <v-row>
         <v-col cols="12">
           <v-text-field v-model="profile.email" disabled readonly>{{user.email}}</v-text-field>
+        </v-col>
+      </v-row>
+
+      <v-banner-text>
+        Username:
+      </v-banner-text>
+      <v-row>
+        <v-col cols="12">
+          <v-text-field v-model="profile.name" disabled readonly>{{user.username}}</v-text-field>
+        </v-col>
+      </v-row>
+
+      <v-banner-text>
+        User type:
+      </v-banner-text>
+      <v-row>
+        <v-col cols="12">
+          <v-text-field v-model="profile.name" disabled readonly>{{user.user_type}}</v-text-field>
         </v-col>
       </v-row>
 
@@ -40,7 +64,8 @@ export default {
         name: '',
         email: '',
         photo: '',
-        confirmationCode: ''
+        confirmationCode: '',
+        user_type:''
       },
       breadCrumb: [
         {
@@ -60,12 +85,6 @@ export default {
         },
       ],
     };
-  },
-  methods: {
-    saveProfile() {
-      // Implemente a lógica para salvar o perfil (pode ser uma chamada API)
-      console.log('Perfil salvo:', this.profile);
-    },
   },
 };
 </script>
