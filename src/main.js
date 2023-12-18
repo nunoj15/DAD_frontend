@@ -19,12 +19,8 @@ const serverBaseUrl = 'http://localhost:8000'
 
 const app = createApp(App)
 
-<<<<<<< HEAD
 app.provide('serverBaseUrl',`${apiDomain}/api`)
 
-=======
-const serverBaseUrl = 'http://localhost:80'
->>>>>>> 2067e9ff63e6ad146873e929c96e0edc4c1c1366
 app.provide('serverBaseUrl', serverBaseUrl)
 // Default Axios configuration
 axios.defaults.baseURL = apiDomain + '/api'
