@@ -7,17 +7,22 @@
             <p>Hello, Admin!</p>
             <label>
                 Transaction Type:
-                <input type="radio" v-model="selectedTransactionType" value="D" name="transactionType"
+                <input type="radio" v-model="selectedTransactionTypeAdmin" value="D" name="transactionType"
                     @change="updateAdminGraphs"> Debit
-                <input type="radio" v-model="selectedTransactionType" value="C" name="transactionType"
+                <input type="radio" v-model="selectedTransactionTypeAdmin" value="C" name="transactionType"
                     @change="updateAdminGraphs"> Credit
             </label>
-            <div class="chart-container">
-                <canvas ref="transactionCountChart"></canvas>
+            <div class="charts-container">
+                <div class="chart-container">
+                    <canvas ref="transactionCountChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas ref="totalTransactionValueChart"></canvas>
+                </div>
             </div>
-            <div class="chart-container">
-                <canvas ref="totalTransactionValueChart"></canvas>
-            </div>
+
+
+
         </div>
         <div v-else class="charts-container">
             <div class="chart-container">
@@ -126,10 +131,12 @@ const showCategoriesOptionDate = ref('all');
 const startDate = ref(null);
 const endDate = ref(null);
 const formatDate = 'yyyy-MM-dd';
-const selectedTransactionType = ref('debit');
+const selectedTransactionType = ref('D');
+const selectedTransactionTypeAdmin = ref('D');
+selectedTransactionTypeAdmin
 const totalAmountChart = ref(null);
 const transactionCountChart = ref(null);
-const totalTransactionValueChart = ref({ value: null });
+const totalTransactionValueChart = ref(null);
 
 
 
@@ -203,13 +210,13 @@ onMounted(async () => {
                     Authorization: `Bearer ${localStorage.getItem('token')}`,
                 },
             });
+            console.log(totalTransactionValueResponse);
+            const totalTransactionValueData = totalTransactionValueResponse.data.totalTransactionValue;
 
-            const totalTransactionValueData = totalTransactionValueResponse.data.transactionCount;
-
-            // Draw the graph for total transaction value
             drawTotalTransactionValueGraph(totalTransactionValueData);
-        
-            
+            // Draw the graph for total transaction value
+
+
 
         }
     } catch (error) {
@@ -424,13 +431,56 @@ const drawTransactionTypesChart = (data) => {
 };
 
 const updateAdminGraphs = async () => {
+    if (transactionCountChart.value.value) {
+        transactionCountChart.value.value.destroy();
+        console.log("destrui com sucesso");
+    }
+    if (totalTransactionValueChart.value.value) {
+        totalTransactionValueChart.value.value.destroy();
+        console.log("destrui com sucesso_2");
+    }
+    totalTransactionValueChart
 
+    try {
+        // Fetch count of transactions based on the selected type and group by payment type
+        const transactionCountResponse = await axios.get('/transaction-count', {
+            params: {
+                type: selectedTransactionTypeAdmin.value,
+            },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        });
+
+        const transactionCountData = transactionCountResponse.data.transactionCount;
+
+        // Draw the graph for transaction count
+        drawTransactionCountGraph(transactionCountData);
+
+        const totalTransactionValueResponse = await axios.get('/all-transactions-value', {
+            params: {
+                type: selectedTransactionTypeAdmin.value,
+            },
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('token')}`,
+            },
+        });
+
+        const totalTransactionValueData = totalTransactionValueResponse.data.totalTransactionValue;
+
+        // Draw the graph for total transaction value
+        drawTotalTransactionValueGraph(totalTransactionValueData);
+    } catch (error) {
+        console.error('Failed to update admin graphs:', error);
+    }
 };
 
+
 const drawTransactionCountGraph = (transactionCountData) => {
+
     const ctx = transactionCountChart.value.getContext('2d');
 
-    new Chart(ctx, {
+    transactionCountChart.value.value = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: transactionCountData.map(item => item.payment_type),
@@ -465,33 +515,47 @@ const drawTransactionCountGraph = (transactionCountData) => {
     });
 };
 
-const drawTotalTransactionValueGraph = (totalTransactionValueData) => {
+const drawTotalTransactionValueGraph = (data) => {
+
+    console.log("vou desenhar um grafico aqui")
     const ctx = totalTransactionValueChart.value.getContext('2d');
 
-    // Check if totalTransactionValueData is defined and is an array
-    if (totalTransactionValueData && Array.isArray(totalTransactionValueData)) {
-        new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: totalTransactionValueData.map(item => item.payment_type),
-                datasets: [{
-                    data: totalTransactionValueData.map(item => item.count),
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.8)',
-                        'rgba(54, 162, 235, 0.8)',
-                        'rgba(255, 205, 86, 0.8)',
-                        'rgba(75, 192, 192, 0.8)',
-                        'rgba(153, 102, 255, 0.8)',
-                        'rgba(255, 159, 64, 0.8)',
-                        // Add more colors as needed
-                    ],
-                }],
+    totalTransactionValueChart.value.value = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: data.map(item => item.payment_type),
+            datasets: [{
+                data: data.map(item => item.total_value),
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.8)',
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 206, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(153, 102, 255, 0.8)',
+                    'rgba(103, 151, 255, 0.8)',
+                ],
+            }],
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: false, // Hide the legend
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => {
+                            const label = context.label || '';
+                            const value = context.formattedValue || '';
+                            return `${label}: ${value} €`;
+                        },
+                    },
+                },
             },
-        });
-    } else {
-        console.error('totalTransactionValueData is undefined or not an array');
-    }
+        },
+    });
 };
+
+
 
 
 

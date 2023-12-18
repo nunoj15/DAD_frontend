@@ -17,8 +17,8 @@
           },
           {
             "id": 5,
-            "title": "Categoria 2",
-            "link": "/produtos/categoria2"
+            "title": "Categorias",
+            "link": "/get-all-categories"
           }
         ]
       },

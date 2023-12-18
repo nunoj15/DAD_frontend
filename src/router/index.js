@@ -7,6 +7,7 @@ import TransactionsView from '../views/TransactionsView.vue'
 import UserProfileView from "../views/profile/UserProfileView.vue"
 import ChangeProfileView from "../views/profile/ChangeProfileView.vue";
 import ChangePasswordView from "../views/profile/ChangePasswordView.vue";
+import CategoriesComponent from '../components/CategoriesComponent.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -67,6 +68,12 @@ const router = createRouter({
       component: ChangePasswordView,
       meta: { requiresAuth: true }
     },
+    {
+    path: '/get-all-categories',
+    name: 'categories',
+    component: CategoriesComponent,
+    meta: { requiresAuth: true }
+  },
   ]
 })
 
